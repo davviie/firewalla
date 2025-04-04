@@ -49,6 +49,15 @@ sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from ne
 
 # Check error logs
 sudo cat ~/firewalla/docker-in-docker-error.log
+
+# Automate cleanup of invalid references in ~/.bashrc
+echo "🔧 Cleaning up invalid references in ~/.bashrc..."
+sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
+echo "✅ Invalid references removed from ~/.bashrc."
+
+# Reload the shell configuration
+source ~/.bashrc
+echo "✅ Shell configuration reloaded. You can now use the 'docker' alias for nested Docker."
 ```
 
 ---
@@ -60,6 +69,11 @@ sudo cat ~/firewalla/docker-in-docker-error.log
 #   Enables `--tlsverify` if certificates are available; otherwise, falls back to insecure binding.
 # - **Error Log Saving**:
 #   Saves error logs from the `docker-in-docker` container to `docker-in-docker-error.log` in the repository directory.
+
+# ---
+
+## Troubleshooting
+# If you encounter an error like `-bash: /home/pi/firewalla/scripts/alias.sh: No such file or directory`, the above commands will automatically clean up invalid references in `~/.bashrc`.
 
 # ---
 

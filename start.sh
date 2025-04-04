@@ -261,6 +261,14 @@ EOF
     # Add alias for nested Docker
     echo "🔗 Adding alias for nested Docker..."
     ALIAS_COMMAND="alias docker='sudo docker exec -it $SERVICE_NAME docker'"
+
+    # Remove invalid references to non-existent files in ~/.bashrc
+    if grep -q "/home/pi/firewalla/scripts/alias.sh" ~/.bashrc; then
+        echo "⚠️ Removing invalid reference to /home/pi/firewalla/scripts/alias.sh from ~/.bashrc..."
+        sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
+    fi
+
+    # Add the alias if it doesn't already exist
     if ! grep -Fxq "$ALIAS_COMMAND" ~/.bashrc; then
         echo "$ALIAS_COMMAND" >> ~/.bashrc
         echo "✅ Alias added to ~/.bashrc. Run 'source ~/.bashrc' to apply it in the current session."
