@@ -12,13 +12,6 @@ SERVICE_NAME=${SERVICE_NAME:-docker-in-docker}
 read -p "Enter Docker image to use (default: docker:latest): " DOCKER_IMAGE
 DOCKER_IMAGE=${DOCKER_IMAGE:-docker:latest}
 
-# Prompt for branch (optional)
-read -p "Enter branch to clone (leave blank for default): " BRANCH_OPTION
-BRANCH_CMD=""
-if [ -n "$BRANCH_OPTION" ]; then
-    BRANCH_CMD="-b $BRANCH_OPTION"
-fi
-
 # Define working directory
 DIR=~/firewalla
 
@@ -46,12 +39,10 @@ else
     echo "📁 Docker directory $DOCKER_DIR already exists."
 fi
 
-cd "$DIR"
-
 # Clone the GitHub repo using HTTPS first (public)
 if [ ! -d "$DIR/$REPO_NAME" ]; then
     echo "🌐 Cloning repository from GitHub..."
-    git clone $BRANCH_CMD "https://github.com/$GITHUB_USER/$REPO_NAME.git"
+    git clone "https://github.com/$GITHUB_USER/$REPO_NAME.git" "$DIR/$REPO_NAME"
 else
     echo "✔️ Repository already exists."
 fi
@@ -110,15 +101,10 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - $DIR:/repo
-    working_dir: /repo
-    command: >
-      sh -c "
-        apk add --no-cache git docker-compose &&
-        cd /repo/$REPO_NAME &&
-        docker-compose up -d &&
-        tail -f /dev/null
-      "
+      - /var/lib/docker:/var/lib/docker
+    environment:
+      - DOCKER_TLS_CERTDIR=
+    command: dockerd
 EOF
 
 # Validate the Compose file
