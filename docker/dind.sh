@@ -20,11 +20,13 @@ PIHOLE_WEBPASSWORD=${PIHOLE_WEBPASSWORD:-$DEFAULT_PIHOLE_WEBPASSWORD}
 read -p "Enter Portainer Port (default: $DEFAULT_PORTAINER_PORT): " PORTAINER_PORT
 PORTAINER_PORT=${PORTAINER_PORT:-$DEFAULT_PORTAINER_PORT}
 
-# Export environment variables for Docker Compose
-export NEXTDNS_CONFIG
-export PIHOLE_TZ
-export PIHOLE_WEBPASSWORD
-export PORTAINER_PORT
+# Write environment variables to a .env file
+ENV_FILE=./.env
+echo "NEXTDNS_CONFIG=$NEXTDNS_CONFIG" > $ENV_FILE
+echo "PIHOLE_TZ=$PIHOLE_TZ" >> $ENV_FILE
+echo "PIHOLE_WEBPASSWORD=$PIHOLE_WEBPASSWORD" >> $ENV_FILE
+echo "PORTAINER_PORT=$PORTAINER_PORT" >> $ENV_FILE
+echo "✅ Environment variables written to $ENV_FILE"
 
 # Navigate to the directory containing the Compose file
 DOCKER_DIR=~/firewalla/docker

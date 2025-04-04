@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - NEXTDNS_CONFIG=${NEXTDNS_CONFIG:-default_config_id}
+      - NEXTDNS_CONFIG=${NEXTDNS_CONFIG}
     command: run
     healthcheck:
       test: ["CMD", "nextdns", "status"]
