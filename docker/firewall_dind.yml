@@ -3,14 +3,6 @@
 # and a Debian container for various utilities. It also includes optional containers for Portainer
 # (Docker management) and Watchtower (automatic updates).
 # Define environment variables at the top
-x-environment:
-  environment:
-    NEXTDNS_CONFIG: your_config_id_here
-    PIHOLE_TZ: "America/Montreal" # Set your timezone
-    PIHOLE_WEBPASSWORD: "p0tat0" # Set the Pi-hole admin password
-    GITHUB_CLI_VOLUME: ./github
-    UTILITIES_VOLUME: ./utilities
-    PORTAINER_PORT: "9000"
 
 services:
   nextdns:
