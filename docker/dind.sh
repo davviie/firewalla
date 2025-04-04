@@ -7,7 +7,7 @@ DEFAULT_PIHOLE_WEBPASSWORD="admin"
 DEFAULT_PORTAINER_PORT="9000"
 
 # Prompt the user for environment variable values (or use defaults)
-echo "🔧 Configuring environment variables for firewall_dind.yml..."
+echo "🔧 Configuring environment variables for firewalla_dind.yml..."
 read -p "Enter NextDNS Config ID (default: $DEFAULT_NEXTDNS_CONFIG): " NEXTDNS_CONFIG
 NEXTDNS_CONFIG=${NEXTDNS_CONFIG:-$DEFAULT_NEXTDNS_CONFIG}
 
@@ -19,6 +19,12 @@ PIHOLE_WEBPASSWORD=${PIHOLE_WEBPASSWORD:-$DEFAULT_PIHOLE_WEBPASSWORD}
 
 read -p "Enter Portainer Port (default: $DEFAULT_PORTAINER_PORT): " PORTAINER_PORT
 PORTAINER_PORT=${PORTAINER_PORT:-$DEFAULT_PORTAINER_PORT}
+
+# Check if the directory is writable
+if [ ! -w ./ ]; then
+    echo "❌ Current directory is not writable. Please fix permissions."
+    exit 1
+fi
 
 # Write environment variables to a .env file
 ENV_FILE=./.env
@@ -41,16 +47,16 @@ cd "$DOCKER_DIR" || {
 }
 
 # Validate the Compose file
-echo "🔍 Validating firewall_dind.yml..."
-docker-compose -f firewall_dind.yml config || {
-    echo "❌ firewall_dind.yml is invalid."
+echo "🔍 Validating firewalla_dind.yml..."
+docker-compose -f firewalla_dind.yml config || {
+    echo "❌ firewalla_dind.yml is invalid."
     exit 1
 }
 
 # Launch the Compose file
-echo "📦 Launching services defined in firewall_dind.yml..."
-docker-compose -f firewall_dind.yml up -d || {
-    echo "❌ Failed to start services in firewall_dind.yml."
+echo "📦 Launching services defined in firewalla_dind.yml..."
+docker-compose -f firewalla_dind.yml up -d || {
+    echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
 
