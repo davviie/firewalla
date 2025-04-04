@@ -1,5 +1,7 @@
-version: '3.8'
-
+# This Docker Compose file sets up a firewall using Docker-in-Docker (DinD) and includes several useful containers.
+# It includes NextDNS for DNS filtering, Pi-hole for ad-blocking, GitHub CLI for GitHub management,
+# and a Debian container for various utilities. It also includes optional containers for Portainer
+# (Docker management) and Watchtower (automatic updates).
 # Define environment variables at the top
 x-environment:
   environment:
