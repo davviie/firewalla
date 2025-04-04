@@ -29,12 +29,21 @@ if ! command -v docker &>/dev/null; then
     exit 1
 fi
 
-# Create directory
+# Create main directory if it doesn't exist
 if [ ! -d "$DIR" ]; then
-    echo "📁 Creating directory $DIR..."
+    echo "📁 Creating main directory $DIR..."
     mkdir -p "$DIR"
 else
-    echo "📁 Directory $DIR already exists."
+    echo "📁 Main directory $DIR already exists."
+fi
+
+# Create subdirectory for Docker if it doesn't exist
+DOCKER_DIR="$DIR/docker"
+if [ ! -d "$DOCKER_DIR" ]; then
+    echo "📁 Creating Docker directory $DOCKER_DIR..."
+    mkdir -p "$DOCKER_DIR"
+else
+    echo "📁 Docker directory $DOCKER_DIR already exists."
 fi
 
 cd "$DIR"
