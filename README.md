@@ -49,7 +49,7 @@ sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from ne
 
 # Check error logs
 sudo cat ~/firewalla/docker-in-docker-error.log
-
+docker run --rm alpine echo "Hello from nested Docker!"
 # Automate cleanup of invalid references in ~/.bashrc
 echo "🔧 Cleaning up invalid references in ~/.bashrc..."
 sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
