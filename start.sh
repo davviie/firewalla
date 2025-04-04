@@ -217,6 +217,22 @@ sudo docker-compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d || {
     exit 1
 }
 
+# Install the latest Docker Compose inside the docker-in-docker container if not already installed
+echo "🔍 Checking if Docker Compose is already installed inside the docker-in-docker container..."
+if ! sudo docker exec -it "$SERVICE_NAME" docker-compose --version &>/dev/null; then
+    echo "🔄 Installing the latest Docker Compose inside the docker-in-docker container..."
+    sudo docker exec -it "$SERVICE_NAME" sh -c "
+        curl -L 'https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose &&
+        chmod +x /usr/local/bin/docker-compose &&
+        docker-compose --version
+    " || {
+        echo "❌ Failed to install Docker Compose inside the docker-in-docker container."
+        exit 1
+    }
+else
+    echo "✅ Docker Compose is already installed inside the docker-in-docker container."
+fi
+
 # Confirm container is running
 echo "🔍 Checking if container '$SERVICE_NAME' is running..."
 if sudo docker ps | grep -q "$SERVICE_NAME"; then
