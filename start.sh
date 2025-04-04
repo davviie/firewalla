@@ -9,7 +9,15 @@ else
 fi
 sudo docker stop $(docker ps -aq) 2>/dev/null || true
 sudo docker rm $(docker ps -aq) 2>/dev/null || true
-sudo docker rmi -f $(docker images -q) 2>/dev/null || true
+
+# Check if the Docker image exists locally
+if sudo docker images | grep -q "$DOCKER_IMAGE"; then
+    echo "✅ Docker image '$DOCKER_IMAGE' already exists. Skipping image removal."
+else
+    echo "🧹 Removing all Docker images..."
+    sudo docker rmi -f $(docker images -q) 2>/dev/null || true
+fi
+
 sudo docker volume rm $(docker volume ls -q) 2>/dev/null || true
 sudo docker network rm $(docker network ls -q) 2>/dev/null || true
 echo "✅ Docker environment purged."
@@ -127,6 +135,7 @@ services:
     volumes:
       - /var/lib/docker:/var/lib/docker
       - /var/run/docker.sock:/var/run/docker.sock
+      - $DIR:/repo
     command: dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock
 EOF
 
