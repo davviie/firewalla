@@ -81,9 +81,10 @@ else
     echo "📁 Docker directory $DOCKER_DIR already exists."
 fi
 
-# Set permissions for the entire directory
-echo "🔧 Setting permissions for the entire directory..."
+# Set permissions for the entire directory and subdirectories
+echo "🔧 Setting permissions for the entire directory and subdirectories..."
 sudo chmod -R 777 "$DIR"
+sudo chmod -R 777 "$DOCKER_DIR"
 echo "✅ Permissions set for $DIR and its subdirectories."
 
 # Clone the GitHub repo using SSH
