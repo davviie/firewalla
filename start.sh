@@ -98,11 +98,11 @@ echo "🔁 Switching repository remote to SSH..."
 cd "$DIR/$REPO_NAME"
 git remote set-url origin git@github.com:$GITHUB_USER/$REPO_NAME.git
 
-# Create setup.yml
-echo "📝 Creating setup.yml..."
-
-cat <<EOF > "$DIR/docker/setup.yml"
-
+# Create Compose file named after the container
+COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
+echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
+cat <<EOF > "$COMPOSE_FILE"
+version: '3.3'
 services:
   $SERVICE_NAME:
     image: $DOCKER_IMAGE
@@ -110,19 +110,21 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - $DIR:/repo
+    working_dir: /repo
     command: >
       sh -c "
-        apk add --no-cache git &&
-        cd /repo &&
+        apk add --no-cache git docker-compose &&
+        cd /repo/$REPO_NAME &&
         docker-compose up -d &&
         tail -f /dev/null
       "
 EOF
 
-# Validate setup.yml
-echo "🔍 Validating setup.yml..."
-docker-compose -f "$DIR/docker/setup.yml" config || {
-    echo "❌ setup.yml is invalid."
+# Validate the Compose file
+echo "🔍 Validating $SERVICE_NAME.yml..."
+docker-compose -f "$COMPOSE_FILE" config || {
+    echo "❌ $SERVICE_NAME.yml is invalid."
     exit 1
 }
 
@@ -132,8 +134,8 @@ sudo systemctl start docker
 sudo systemctl enable docker
 
 # Run docker-compose
-echo "📦 Running Docker Compose..."
-sudo docker-compose -f "$DIR/docker/setup.yml" up -d || {
+echo "📦 Running Docker Compose for $SERVICE_NAME..."
+sudo docker-compose -f "$COMPOSE_FILE" up -d || {
     echo "❌ Failed to start Docker Compose."
     exit 1
 }
@@ -144,33 +146,8 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     echo "✅ $SERVICE_NAME is up and running."
 else
     echo "❌ Failed to start the container."
-    sudo docker-compose down
+    sudo docker-compose -f "$COMPOSE_FILE" down
     exit 1
 fi
 
-# Create systemd service
-echo "⚙️ Creating systemd service for Docker Compose..."
-sudo tee /etc/systemd/system/docker-compose-dind.service > /dev/null <<EOF
-[Unit]
-Description=Docker Compose for $SERVICE_NAME
-After=docker.service
-Requires=docker.service
-
-[Service]
-WorkingDirectory=$DIR
-ExecStart=/usr/local/bin/docker-compose up -d
-ExecStop=/usr/local/bin/docker-compose down
-Restart=always
-TimeoutSec=60
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Reload and enable service
-echo "🔁 Reloading systemd and enabling service..."
-sudo systemctl daemon-reload
-sudo systemctl enable docker-compose-dind.service
-sudo systemctl start docker-compose-dind.service
-
-echo "🎉 Setup complete! '$SERVICE_NAME' will auto-start on reboot."
+echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
