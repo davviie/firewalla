@@ -48,7 +48,11 @@ REPO_NAME="firewalla"
 SERVICE_NAME="docker-in-docker"
 
 # Define Docker image
-DOCKER_IMAGE="docker:latest"
+DOCKER_IMAGE="docker:latest"  # Use the latest version dynamically
+
+# Pull the latest Docker image
+echo "🔄 Pulling the latest Docker image..."
+sudo docker pull $DOCKER_IMAGE
 
 # Define working directory
 DIR=~/firewalla
@@ -171,7 +175,18 @@ services:
       - DOCKER_TLS_CERTDIR=
     volumes:
       - $DIR:/repo
-    command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y apt-transport-https ca-certificates curl gnupg &&
+      mkdir -p /etc/apt/keyrings &&
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc &&
+      chmod a+r /etc/apt/keyrings/docker.asc &&
+      echo 'deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \$(. /etc/os-release && echo \${UBUNTU_CODENAME:-\$VERSION_CODENAME}) stable' > /etc/apt/sources.list.d/docker.list &&
+      apt-get update &&
+      apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin &&
+      dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
+      "
     deploy:
       resources:
         limits:
