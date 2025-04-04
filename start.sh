@@ -11,8 +11,9 @@ sudo docker stop $(docker ps -aq) 2>/dev/null || true
 sudo docker rm $(docker ps -aq) 2>/dev/null || true
 
 # Check if the Docker image exists locally
-if sudo docker images | grep -q "docker:latest"; then
-    echo "✅ Docker image 'docker:latest' already exists. Skipping image removal."
+echo "🔍 Checking if the required Docker image '$DOCKER_IMAGE' exists..."
+if sudo docker images | grep -q "$DOCKER_IMAGE"; then
+    echo "✅ Docker image '$DOCKER_IMAGE' already exists. Skipping image removal."
 else
     echo "🧹 Removing all Docker images..."
     sudo docker rmi -f $(docker images -q) 2>/dev/null || true
