@@ -31,8 +31,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Prompt user for GitHub username
-read -p "Enter your GitHub username: " GITHUB_USER
+# Set default GitHub username
+DEFAULT_GITHUB_USER="davviie"
+
+# Check if the username is already set or prompt for it
+if [ -z "$GITHUB_USER" ]; then
+    read -p "Enter your GitHub username (default: $DEFAULT_GITHUB_USER): " GITHUB_USER
+    GITHUB_USER=${GITHUB_USER:-$DEFAULT_GITHUB_USER}
+else
+    echo "Using GitHub username: $GITHUB_USER"
+fi
+
 REPO_NAME="firewalla"
 
 # Define Docker Compose service name
@@ -68,14 +77,19 @@ else
     echo "📁 Docker directory $DOCKER_DIR already exists."
 fi
 
-# Clone the GitHub repo using HTTPS first (public)
+# Clone the GitHub repo using SSH
 if [ ! -d "$DIR/$REPO_NAME" ]; then
-    echo "🌐 Cloning repository from GitHub..."
-    read -p "Enter your GitHub username: " GITHUB_USER
-    git clone "https://github.com/$GITHUB_USER/$REPO_NAME.git" "$DIR/$REPO_NAME" || {
-        echo "❌ Failed to clone repository using HTTPS. Ensure the username is correct."
-        exit 1
-    }
+    echo "🌐 Attempting to clone repository from GitHub using SSH..."
+    if ! git clone "git@github.com:$GITHUB_USER/$REPO_NAME.git" "$DIR/$REPO_NAME"; then
+        echo "❌ SSH cloning failed. Falling back to HTTPS cloning..."
+        read -p "Enter your GitHub username: " GITHUB_USER
+        git clone "https://github.com/$GITHUB_USER/$REPO_NAME.git" "$DIR/$REPO_NAME" || {
+            echo "❌ Failed to clone repository using HTTPS. Please check your credentials and repository access."
+            exit 1
+        }
+    else
+        echo "✅ Repository cloned successfully using SSH."
+    fi
 else
     echo "✔️ Repository already exists."
 fi
