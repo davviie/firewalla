@@ -39,7 +39,7 @@ services:
     command: >
       sh -c "
         apk add --no-cache git &&
-        git clone https://davviie:${GITHUB_TOKEN}@github.com/davviie/firewalla/YOUR_REPO.git /repo &&
+        git clone https://davviie:${GITHUB_TOKEN}@github.com/davviie/firewalla.git /repo &&
         cd /repo &&
         docker-compose up -d &&
         tail -f /dev/null
