@@ -177,11 +177,7 @@ services:
       - $DIR:/repo
     command: >
       sh -c "
-      apk add --no-cache curl ca-certificates gnupg &&
-      mkdir -p /etc/apk/keys &&
-      curl -fsSL https://download.docker.com/linux/alpine/gpg -o /etc/apk/keys/docker.asc &&
-      echo 'https://download.docker.com/linux/alpine/v3.16/community' >> /etc/apk/repositories &&
-      apk update &&
+      apk add --no-cache curl ca-certificates &&
       apk add --no-cache docker-cli docker-compose-plugin &&
       dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
       "
