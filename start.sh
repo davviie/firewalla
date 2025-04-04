@@ -150,4 +150,12 @@ else
     exit 1
 fi
 
+# Run `docker ps` inside the Docker-in-Docker container
+echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
+docker exec -it "$SERVICE_NAME" docker ps
+
+# Run `docker build` inside the Docker-in-Docker container
+echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
+docker exec -it "$SERVICE_NAME" docker build /repo/$REPO_NAME
+
 echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
