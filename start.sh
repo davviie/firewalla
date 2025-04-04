@@ -21,8 +21,51 @@ fi
 # Navigate to the directory
 cd "$DIR"
 
-# Hardcoded GitHub Token
-GITHUB_TOKEN="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"
+# Clone the repository publicly
+echo "Cloning the repository publicly..."
+if [ ! -d "$DIR/firewalla" ]; then
+    git clone https://github.com/davviie/firewalla.git
+else
+    echo "Repository already cloned."
+fi
+
+# Set up SSH for GitHub
+echo "Setting up SSH for GitHub..."
+SSH_KEY=~/.ssh/id_rsa
+
+# Check if an SSH key already exists
+if [ ! -f "$SSH_KEY" ]; then
+    echo "No SSH key found. Generating a new SSH key..."
+    read -p "Enter your email address for the SSH key: " EMAIL
+    ssh-keygen -t rsa -b 4096 -C "$EMAIL" -f "$SSH_KEY" -N ""
+    echo "SSH key generated successfully."
+else
+    echo "SSH key already exists at $SSH_KEY."
+fi
+
+# Add the SSH key to the SSH agent
+echo "Adding SSH key to the SSH agent..."
+eval "$(ssh-agent -s)"
+ssh-add "$SSH_KEY"
+
+# Display the public key and prompt the user to add it to GitHub
+echo "Copy the following SSH public key and add it to your GitHub account:"
+cat "${SSH_KEY}.pub"
+echo "Visit https://github.com/settings/keys to add the SSH key."
+read -p "Press Enter after adding the SSH key to GitHub..."
+
+# Test SSH connection to GitHub
+echo "Testing SSH connection to GitHub..."
+ssh -T git@github.com
+if [ $? -ne 1 ]; then
+    echo "Error: Unable to authenticate with GitHub via SSH. Please ensure your SSH key is added to your GitHub account."
+    exit 1
+fi
+
+# Update the repository to use SSH for future operations
+echo "Updating the repository to use SSH for future operations..."
+cd "$DIR/firewalla"
+git remote set-url origin git@github.com:davviie/firewalla.git
 
 # Create docker-compose.yml for Docker-in-Docker with restart policy
 echo "Creating docker-compose.yml for Docker-in-Docker..."
@@ -38,7 +81,6 @@ services:
     command: >
       sh -c "
         apk add --no-cache git &&
-        git clone https://davviie:${GITHUB_TOKEN}@github.com/davviie/firewalla.git /repo &&
         cd /repo &&
         docker-compose up -d &&
         tail -f /dev/null
