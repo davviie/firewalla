@@ -142,65 +142,11 @@ services:
       fi &&
       dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
       "
-    deploy:
-      replicas: 3
-      resources:
-        limits:
-          memory: 1g
-          cpus: "0.5"
-      restart_policy:
-        condition: on-failure
-    networks:
-      - default
-networks:
-  default:
-    driver: overlay
 EOF
-
-# Define default values for environment variables
-DEFAULT_NEXTDNS_CONFIG="your_config_id_here"
-DEFAULT_PIHOLE_TZ="America/Montreal"
-DEFAULT_PIHOLE_WEBPASSWORD="p0tat0"
-DEFAULT_GITHUB_CLI_VOLUME="./github"
-DEFAULT_UTILITIES_VOLUME="./utilities"
-DEFAULT_PORTAINER_PORT="9000"
-
-# Prompt the user for environment variable values (or use defaults)
-echo "🔧 Configuring environment variables for Docker Compose..."
-read -p "Enter NextDNS Config ID (default: $DEFAULT_NEXTDNS_CONFIG): " NEXTDNS_CONFIG
-NEXTDNS_CONFIG=${NEXTDNS_CONFIG:-$DEFAULT_NEXTDNS_CONFIG}
-
-read -p "Enter Pi-hole Timezone (default: $DEFAULT_PIHOLE_TZ): " PIHOLE_TZ
-PIHOLE_TZ=${PIHOLE_TZ:-$DEFAULT_PIHOLE_TZ}
-
-read -p "Enter Pi-hole Admin Password (default: $DEFAULT_PIHOLE_WEBPASSWORD): " PIHOLE_WEBPASSWORD
-PIHOLE_WEBPASSWORD=${PIHOLE_WEBPASSWORD:-$DEFAULT_PIHOLE_WEBPASSWORD}
-
-read -p "Enter GitHub CLI Volume Path (default: $DEFAULT_GITHUB_CLI_VOLUME): " GITHUB_CLI_VOLUME
-GITHUB_CLI_VOLUME=${GITHUB_CLI_VOLUME:-$DEFAULT_GITHUB_CLI_VOLUME}
-
-read -p "Enter Utilities Volume Path (default: $DEFAULT_UTILITIES_VOLUME): " UTILITIES_VOLUME
-UTILITIES_VOLUME=${UTILITIES_VOLUME:-$DEFAULT_UTILITIES_VOLUME}
-
-read -p "Enter Portainer Port (default: $DEFAULT_PORTAINER_PORT): " PORTAINER_PORT
-PORTAINER_PORT=${PORTAINER_PORT:-$DEFAULT_PORTAINER_PORT}
-
-# Write the .env file
-ENV_FILE="$DOCKER_DIR/.env"
-echo "📝 Writing environment variables to $ENV_FILE..."
-cat <<EOF > "$ENV_FILE"
-NEXTDNS_CONFIG=$NEXTDNS_CONFIG
-PIHOLE_TZ=$PIHOLE_TZ
-PIHOLE_WEBPASSWORD=$PIHOLE_WEBPASSWORD
-GITHUB_CLI_VOLUME=$GITHUB_CLI_VOLUME
-UTILITIES_VOLUME=$UTILITIES_VOLUME
-PORTAINER_PORT=$PORTAINER_PORT
-EOF
-echo "✅ .env file created successfully."
 
 # Validate the Compose file
 echo "🔍 Validating $SERVICE_NAME.yml..."
-docker-compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" config || {
+docker-compose -f "$COMPOSE_FILE" config || {
     echo "❌ $SERVICE_NAME.yml is invalid."
     exit 1
 }
@@ -212,12 +158,12 @@ sudo systemctl enable docker
 
 # Run docker-compose
 echo "📦 Running Docker Compose for $SERVICE_NAME..."
-sudo docker-compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d || {
+sudo docker-compose -f "$COMPOSE_FILE" up -d || {
     echo "❌ Failed to start Docker Compose."
     exit 1
 }
 
-# Install the latest Docker Compose inside the docker-in-docker container if not already installed
+# Install the latest Docker Compose inside the docker-in-docker conta if not already installediner if not already installed
 echo "🔍 Checking if Docker Compose is already installed inside the docker-in-docker container..."
 if ! sudo docker exec -it "$SERVICE_NAME" docker-compose --version &>/dev/null; then
     echo "🔄 Installing the latest Docker Compose inside the docker-in-docker container..."

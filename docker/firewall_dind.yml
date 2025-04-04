@@ -11,8 +11,18 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - NEXTDNS_CONFIG=${NEXTDNS_CONFIG}
+      - NEXTDNS_CONFIG=${NEXTDNS_CONFIG:-default_config_id}
     command: run
+    healthcheck:
+      test: ["CMD", "nextdns", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
 
   pihole:
     image: pihole/pihole:latest
@@ -20,18 +30,28 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      TZ: ${PIHOLE_TZ}
-      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
+      TZ: ${PIHOLE_TZ:-UTC}
+      WEBPASSWORD: ${PIHOLE_WEBPASSWORD:-admin}
     volumes:
-      - pihole_config:/etc/pihole
-      - dnsmasq_config:/etc/dnsmasq.d
+      - ./pihole_config:/etc/pihole
+      - ./dnsmasq_config:/etc/dnsmasq.d
+    healthcheck:
+      test: ["CMD", "dig", "google.com", "@127.0.0.1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "512M"
 
   github-cli:
     image: ghcr.io/cli/cli:latest
     container_name: github-cli
     restart: unless-stopped
     volumes:
-      - ${GITHUB_CLI_VOLUME}:/root/.config/gh
+      - ./github:/root/.config/gh
     entrypoint: /bin/sh
 
   utilities:
@@ -45,20 +65,18 @@ services:
       tail -f /dev/null
       "
     volumes:
-      - ${UTILITIES_VOLUME}:/data
+      - ./utilities:/data
 
-  # Optional: Portainer for Docker management
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
     restart: unless-stopped
     ports:
-      - "${PORTAINER_PORT}:9000"
+      - "${PORTAINER_PORT:-9000}:9000"
     volumes:
-      - portainer_data:/data
+      - ./portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # Optional: Watchtower for automatic updates
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
@@ -66,8 +84,3 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --cleanup
-
-volumes:
-  pihole_config:
-  dnsmasq_config:
-  portainer_data:
