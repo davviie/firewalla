@@ -134,7 +134,12 @@ services:
       - DOCKER_TLS_CERTDIR=
     volumes:
       - $DIR:/repo
-    command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2
+    command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2 --tls=false
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: "0.5"
 EOF
 
 # Validate the Compose file
