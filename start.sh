@@ -163,6 +163,18 @@ echo "🔍 Checking if container '$SERVICE_NAME' is running..."
 if sudo docker ps | grep -q "$SERVICE_NAME"; then
     echo "✅ $SERVICE_NAME is up and running."
 
+    # Check if Dockerfile exists in the repository directory
+    if [ ! -f "$DIR/$REPO_NAME/Dockerfile" ]; then
+        echo "⚠️ Dockerfile not found in $DIR/$REPO_NAME. Creating a default Dockerfile..."
+        cat <<EOF > "$DIR/$REPO_NAME/Dockerfile"
+# Default Dockerfile
+FROM alpine:latest
+RUN apk add --no-cache bash
+CMD ["bash"]
+EOF
+        echo "✅ Default Dockerfile created at $DIR/$REPO_NAME/Dockerfile."
+    fi
+
     # Run `docker ps` inside the Docker-in-Docker container
     echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
     docker exec -it "$SERVICE_NAME" docker ps
