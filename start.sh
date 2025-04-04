@@ -89,10 +89,10 @@ echo "🔁 Switching repository remote to SSH..."
 cd "$DIR/$REPO_NAME"
 git remote set-url origin git@github.com:$GITHUB_USER/$REPO_NAME.git
 
-# Create docker-compose.yml
-echo "📝 Creating docker-compose.yml..."
+# Create setup.yml
+echo "📝 Creating setup.yml..."
 
-cat <<EOF > "$DIR/docker-compose.yml"
+cat <<EOF > "$DIR/docker/setup.yml"
 
 services:
   $SERVICE_NAME:
@@ -110,10 +110,10 @@ services:
       "
 EOF
 
-# Validate docker-compose.yml
-echo "🔍 Validating docker-compose.yml..."
-docker-compose -f "$DIR/docker-compose.yml" config || {
-    echo "❌ docker-compose.yml is invalid."
+# Validate setup.yml
+echo "🔍 Validating setup.yml..."
+docker-compose -f "$DIR/docker/setup.yml" config || {
+    echo "❌ setup.yml is invalid."
     exit 1
 }
 
@@ -124,7 +124,7 @@ sudo systemctl enable docker
 
 # Run docker-compose
 echo "📦 Running Docker Compose..."
-sudo docker-compose -f "$DIR/docker-compose.yml" up -d || {
+sudo docker-compose -f "$DIR/docker/setup.yml" up -d || {
     echo "❌ Failed to start Docker Compose."
     exit 1
 }
