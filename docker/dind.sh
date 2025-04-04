@@ -46,6 +46,15 @@ cd "$DOCKER_DIR" || {
     exit 1
 }
 
+# Debugging: Print the current working directory
+echo "Current directory: $(pwd)"
+
+# Debugging: Check if the Compose file exists
+if [ ! -f ./firewalla_dind.yml ]; then
+    echo "❌ firewalla_dind.yml not found in $(pwd)."
+    exit 1
+fi
+
 # Validate the Compose file
 echo "🔍 Validating firewalla_dind.yml..."
 docker-compose -f firewalla_dind.yml config || {
