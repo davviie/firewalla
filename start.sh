@@ -71,7 +71,11 @@ fi
 # Clone the GitHub repo using HTTPS first (public)
 if [ ! -d "$DIR/$REPO_NAME" ]; then
     echo "🌐 Cloning repository from GitHub..."
-    git clone "https://github.com/$GITHUB_USER/$REPO_NAME.git" "$DIR/$REPO_NAME"
+    read -p "Enter your GitHub username: " GITHUB_USER
+    git clone "https://github.com/$GITHUB_USER/$REPO_NAME.git" "$DIR/$REPO_NAME" || {
+        echo "❌ Failed to clone repository using HTTPS. Ensure the username is correct."
+        exit 1
+    }
 else
     echo "✔️ Repository already exists."
 fi
@@ -107,8 +111,9 @@ read -p "Press Enter after you've added the SSH key..."
 
 # Test SSH access
 echo "🔍 Testing SSH connection to GitHub..."
-ssh -T git@github.com
-if [ $? -ne 1 ]; then
+if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+    echo "✅ SSH authentication successful."
+else
     echo "❌ SSH authentication failed. Ensure the key is added to GitHub."
     exit 1
 fi
