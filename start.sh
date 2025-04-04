@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Purge all Docker containers, images, volumes, and networks
+echo "🧹 Purging all Docker containers, images, volumes, and networks..."
+sudo docker-compose down --volumes --remove-orphans || true
+sudo docker stop $(docker ps -aq) 2>/dev/null || true
+sudo docker rm $(docker ps -aq) 2>/dev/null || true
+sudo docker rmi -f $(docker images -q) 2>/dev/null || true
+sudo docker volume rm $(docker volume ls -q) 2>/dev/null || true
+sudo docker network rm $(docker network ls -q) 2>/dev/null || true
+echo "✅ Docker environment purged."
+
 # Prompt user for GitHub username
 read -p "Enter your GitHub username: " GITHUB_USER
 REPO_NAME="firewalla"
