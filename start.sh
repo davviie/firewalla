@@ -11,8 +11,8 @@ sudo docker stop $(docker ps -aq) 2>/dev/null || true
 sudo docker rm $(docker ps -aq) 2>/dev/null || true
 
 # Check if the Docker image exists locally
-if sudo docker images | grep -q "$DOCKER_IMAGE"; then
-    echo "✅ Docker image '$DOCKER_IMAGE' already exists. Skipping image removal."
+if sudo docker images | grep -q "docker:latest"; then
+    echo "✅ Docker image 'docker:latest' already exists. Skipping image removal."
 else
     echo "🧹 Removing all Docker images..."
     sudo docker rmi -f $(docker images -q) 2>/dev/null || true
@@ -34,13 +34,11 @@ fi
 read -p "Enter your GitHub username: " GITHUB_USER
 REPO_NAME="firewalla"
 
-# Prompt for custom Docker Compose service name (optional)
-read -p "Enter a custom Docker Compose service name (default: docker-in-docker): " SERVICE_NAME
-SERVICE_NAME=${SERVICE_NAME:-docker-in-docker}
+# Define Docker Compose service name
+SERVICE_NAME="docker-in-docker"
 
-# Prompt for Docker image (default: docker:latest)
-read -p "Enter Docker image to use (default: docker:latest): " DOCKER_IMAGE
-DOCKER_IMAGE=${DOCKER_IMAGE:-docker:latest}
+# Define Docker image
+DOCKER_IMAGE="docker:latest"
 
 # Define working directory
 DIR=~/firewalla
@@ -119,7 +117,7 @@ echo "🔁 Switching repository remote to SSH..."
 cd "$DIR/$REPO_NAME"
 git remote set-url origin git@github.com:$GITHUB_USER/$REPO_NAME.git
 
-# Create Compose file named after the container
+# Create Compose file for docker-in-docker
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
 cat <<EOF > "$COMPOSE_FILE"
@@ -170,13 +168,26 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     echo "⏳ Waiting for Docker daemon to initialize..."
     sleep 20
 
-    # Test Docker daemon connection
-    echo "🐳 Testing Docker daemon connection inside the container..."
-    if ! docker exec -it "$SERVICE_NAME" docker -H tcp://127.0.0.1:2375 info; then
-        echo "⚠️ Failed to connect via TCP. Falling back to Unix socket..."
+    # Check if 'dockerd' is running
+    echo "🔍 Checking if 'dockerd' is running inside the container..."
+    if ! docker exec -it "$SERVICE_NAME" ps aux | grep -q "[d]ockerd"; then
+        echo "❌ 'dockerd' is not running inside the container. Check container logs for details."
+        docker logs "$SERVICE_NAME"
+        exit 1
+    fi
+
+    # Test Docker daemon connections
+    echo "🔍 Testing Docker daemon connections..."
+    if docker exec -it "$SERVICE_NAME" docker -H tcp://127.0.0.1:2375 info; then
+        echo "✅ Successfully connected to Docker daemon via TCP."
+        DOCKER_HOST="tcp://127.0.0.1:2375"
+    elif docker exec -it "$SERVICE_NAME" docker -H unix:///var/run/docker.sock info; then
+        echo "✅ Successfully connected to Docker daemon via Unix socket."
         DOCKER_HOST="unix:///var/run/docker.sock"
     else
-        DOCKER_HOST="tcp://127.0.0.1:2375"
+        echo "❌ Failed to connect to Docker daemon. Check container logs for details."
+        docker logs "$SERVICE_NAME"
+        exit 1
     fi
 
     # Run `docker ps` inside the Docker-in-Docker container
