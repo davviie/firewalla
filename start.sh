@@ -215,48 +215,7 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
         exit 1
     fi
 
-    # Test Docker daemon connections
-    echo "🔍 Testing Docker daemon connections..."
-    if docker exec -it "$SERVICE_NAME" docker -H tcp://127.0.0.1:2375 info; then
-        echo "✅ Successfully connected to Docker daemon via TCP."
-        DOCKER_HOST="tcp://127.0.0.1:2375"
-    elif docker exec -it "$SERVICE_NAME" docker -H unix:///var/run/docker.sock info; then
-        echo "✅ Successfully connected to Docker daemon via Unix socket."
-        DOCKER_HOST="unix:///var/run/docker.sock"
-    else
-        echo "❌ Failed to connect to Docker daemon. Check container logs for details."
-        docker logs "$SERVICE_NAME"
-        exit 1
-    fi
-
-    # Run `docker ps` inside the Docker-in-Docker container
-    echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
-    docker exec -it "$SERVICE_NAME" docker -H "$DOCKER_HOST" ps
-
-    # Check if Dockerfile exists in the repository directory
-    if [ ! -f "$DIR/$REPO_NAME/Dockerfile" ]; then
-        echo "⚠️ Dockerfile not found in $DIR/$REPO_NAME. Creating a default Dockerfile..."
-        cat <<EOF > "$DIR/$REPO_NAME/Dockerfile"
-# Default Dockerfile
-FROM alpine:latest
-RUN apk add --no-cache bash
-CMD ["bash"]
-EOF
-        echo "✅ Default Dockerfile created at $DIR/$REPO_NAME/Dockerfile."
-    fi
-
-    # Ensure the repository directory is writable
-    echo "🔧 Ensuring the repository directory is writable..."
-    sudo chmod -R 777 "$DIR/"
-
-    # Run `docker build` inside the Docker-in-Docker container
-    echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
-    docker exec -it "$SERVICE_NAME" docker -H "$DOCKER_HOST" build -f /repo/firewalla/Dockerfile /repo/firewalla
-
-    # Save error logs from the docker-in-docker container
-    echo "🔍 Saving error logs from the docker-in-docker container..."
-    docker logs "$SERVICE_NAME" 2>&1 | grep -i "error" > "$DIR/$REPO_NAME/docker-in-docker-error.log"
-    echo "✅ Error logs saved to $DIR/$REPO_NAME/docker-in-docker-error.log"
+    echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
 
     # Add alias for nested Docker
     echo "🔗 Adding alias for nested Docker..."
