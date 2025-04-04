@@ -122,12 +122,12 @@ services:
     image: $DOCKER_IMAGE
     privileged: true
     restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker:/var/lib/docker
     environment:
       - DOCKER_TLS_CERTDIR=
-    command: dockerd
+    volumes:
+      - /var/lib/docker:/var/lib/docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock
 EOF
 
 # Validate the Compose file
@@ -153,18 +153,18 @@ sudo docker-compose -f "$COMPOSE_FILE" up -d || {
 echo "🔍 Checking if container '$SERVICE_NAME' is running..."
 if sudo docker ps | grep -q "$SERVICE_NAME"; then
     echo "✅ $SERVICE_NAME is up and running."
+
+    # Run `docker ps` inside the Docker-in-Docker container
+    echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
+    docker exec -it "$SERVICE_NAME" docker ps
+
+    # Run `docker build` inside the Docker-in-Docker container
+    echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
+    docker exec -it "$SERVICE_NAME" docker build /repo/$REPO_NAME
 else
-    echo "❌ Failed to start the container."
+    echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
     sudo docker-compose -f "$COMPOSE_FILE" down
     exit 1
 fi
-
-# Run `docker ps` inside the Docker-in-Docker container
-echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
-docker exec -it "$SERVICE_NAME" docker ps
-
-# Run `docker build` inside the Docker-in-Docker container
-echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
-docker exec -it "$SERVICE_NAME" docker build /repo/$REPO_NAME
 
 echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
