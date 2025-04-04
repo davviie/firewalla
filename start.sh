@@ -22,6 +22,9 @@ fi
 # Navigate to the directory
 cd "$DIR"
 
+# Hardcoded GitHub Token
+GITHUB_TOKEN="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"
+
 # Create docker-compose.yml for Docker-in-Docker with restart policy
 echo "Creating docker-compose.yml for Docker-in-Docker..."
 cat <<EOF > docker-compose.yml
@@ -36,7 +39,7 @@ services:
     command: >
       sh -c "
         apk add --no-cache git &&
-        git clone https://github.com/davviie/firewalla.git /repo &&
+        git clone https://davviie:${GITHUB_TOKEN}@github.com/YOUR_USERNAME/YOUR_REPO.git /repo &&
         cd /repo &&
         docker-compose up -d &&
         tail -f /dev/null
