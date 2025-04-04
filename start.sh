@@ -111,7 +111,7 @@ fi
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
 cat <<EOF > "$COMPOSE_FILE"
-version: '3.3'
+version: '3.8'
 services:
   $SERVICE_NAME:
     container_name: $SERVICE_NAME
@@ -144,10 +144,18 @@ services:
       dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
       "
     deploy:
+      replicas: 3
       resources:
         limits:
           memory: 1g
           cpus: "0.5"
+      restart_policy:
+        condition: on-failure
+    networks:
+      - default
+networks:
+  default:
+    driver: overlay
 EOF
 
 # Validate the Compose file
@@ -204,6 +212,14 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
         echo "✅ Alias added to ~/.bashrc. Run 'source ~/.bashrc' to apply it in the current session."
     else
         echo "ℹ️ Alias already exists in ~/.bashrc."
+    fi
+
+    # Test nested Docker functionality
+    echo "🔍 Testing nested Docker functionality..."
+    if sudo docker exec -it "$SERVICE_NAME" docker run --rm alpine echo "Hello from nested Docker!"; then
+        echo "✅ Nested Docker is working correctly."
+    else
+        echo "❌ Nested Docker test failed. Please check the setup."
     fi
 else
     echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
