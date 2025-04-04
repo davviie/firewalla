@@ -133,7 +133,6 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=
     volumes:
-      - /var/lib/docker:/var/lib/docker
       - $DIR:/repo
     command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock
 EOF
