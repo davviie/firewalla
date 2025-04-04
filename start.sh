@@ -169,7 +169,7 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
 
     # Run `docker build` inside the Docker-in-Docker container
     echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
-    docker exec -it "$SERVICE_NAME" docker build /repo/$REPO_NAME
+    docker exec -it "$SERVICE_NAME" docker build -f /repo/firewalla/Dockerfile /repo/firewalla
 else
     echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
     sudo docker-compose -f "$COMPOSE_FILE" down
