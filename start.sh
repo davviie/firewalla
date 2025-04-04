@@ -2,13 +2,25 @@
 
 # Purge all Docker containers, images, volumes, and networks
 echo "🧹 Purging all Docker containers, images, volumes, and networks..."
-sudo docker-compose down --volumes --remove-orphans || true
+if [ -f "docker-compose.yml" ] || [ -f "docker-compose.yaml" ]; then
+    sudo docker-compose down --volumes --remove-orphans || true
+else
+    echo "⚠️ No docker-compose.yml file found. Skipping docker-compose down."
+fi
 sudo docker stop $(docker ps -aq) 2>/dev/null || true
 sudo docker rm $(docker ps -aq) 2>/dev/null || true
 sudo docker rmi -f $(docker images -q) 2>/dev/null || true
 sudo docker volume rm $(docker volume ls -q) 2>/dev/null || true
 sudo docker network rm $(docker network ls -q) 2>/dev/null || true
 echo "✅ Docker environment purged."
+
+# Restart Docker to fix DNS issues
+echo "🔄 Restarting Docker service to fix DNS issues..."
+sudo systemctl restart docker
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to restart Docker. Please check your Docker installation."
+    exit 1
+fi
 
 # Prompt user for GitHub username
 read -p "Enter your GitHub username: " GITHUB_USER
