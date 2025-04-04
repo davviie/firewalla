@@ -1,0 +1,79 @@
+version: '3.8'
+
+# Define environment variables at the top
+x-environment:
+  environment:
+    NEXTDNS_CONFIG: your_config_id_here
+    PIHOLE_TZ: "America/Montreal" # Set your timezone
+    PIHOLE_WEBPASSWORD: "p0tat0" # Set the Pi-hole admin password
+    GITHUB_CLI_VOLUME: ./github
+    UTILITIES_VOLUME: ./utilities
+    PORTAINER_PORT: "9000"
+
+services:
+  nextdns:
+    image: nextdns/nextdns
+    container_name: nextdns
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - NEXTDNS_CONFIG=${NEXTDNS_CONFIG}
+    command: run
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: ${PIHOLE_TZ}
+      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
+    volumes:
+      - pihole_config:/etc/pihole
+      - dnsmasq_config:/etc/dnsmasq.d
+
+  github-cli:
+    image: ghcr.io/cli/cli:latest
+    container_name: github-cli
+    restart: unless-stopped
+    volumes:
+      - ${GITHUB_CLI_VOLUME}:/root/.config/gh
+    entrypoint: /bin/sh
+
+  utilities:
+    image: debian:latest
+    container_name: utilities
+    restart: unless-stopped
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y curl wget nano git &&
+      tail -f /dev/null
+      "
+    volumes:
+      - ${UTILITIES_VOLUME}:/data
+
+  # Optional: Portainer for Docker management
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "${PORTAINER_PORT}:9000"
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Optional: Watchtower for automatic updates
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup
+
+volumes:
+  pihole_config:
+  dnsmasq_config:
+  portainer_data:
