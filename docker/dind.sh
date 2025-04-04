@@ -22,10 +22,15 @@ PORTAINER_PORT=${PORTAINER_PORT:-$DEFAULT_PORTAINER_PORT}
 
 # Write environment variables to a .env file
 ENV_FILE=./.env
-echo "NEXTDNS_CONFIG=$NEXTDNS_CONFIG" > $ENV_FILE
-echo "PIHOLE_TZ=$PIHOLE_TZ" >> $ENV_FILE
-echo "PIHOLE_WEBPASSWORD=$PIHOLE_WEBPASSWORD" >> $ENV_FILE
-echo "PORTAINER_PORT=$PORTAINER_PORT" >> $ENV_FILE
+{
+    echo "NEXTDNS_CONFIG=$NEXTDNS_CONFIG"
+    echo "PIHOLE_TZ=$PIHOLE_TZ"
+    echo "PIHOLE_WEBPASSWORD=$PIHOLE_WEBPASSWORD"
+    echo "PORTAINER_PORT=$PORTAINER_PORT"
+} > $ENV_FILE || {
+    echo "❌ Failed to create .env file. Check permissions."
+    exit 1
+}
 echo "✅ Environment variables written to $ENV_FILE"
 
 # Navigate to the directory containing the Compose file
