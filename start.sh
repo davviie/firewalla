@@ -96,6 +96,7 @@ cat <<EOF > "$COMPOSE_FILE"
 version: '3.3'
 services:
   $SERVICE_NAME:
+    container_name: $SERVICE_NAME
     image: $DOCKER_IMAGE
     privileged: true
     restart: unless-stopped
