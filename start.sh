@@ -226,9 +226,18 @@ EOF
         echo "✅ Default Dockerfile created at $DIR/$REPO_NAME/Dockerfile."
     fi
 
+    # Ensure the repository directory is writable
+    echo "🔧 Ensuring the repository directory is writable..."
+    sudo chmod -R 777 "$DIR/"
+
     # Run `docker build` inside the Docker-in-Docker container
     echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
     docker exec -it "$SERVICE_NAME" docker -H "$DOCKER_HOST" build -f /repo/firewalla/Dockerfile /repo/firewalla
+
+    # Save error logs from the docker-in-docker container
+    echo "🔍 Saving error logs from the docker-in-docker container..."
+    docker logs "$SERVICE_NAME" 2>&1 | grep -i "error" > "$DIR/$REPO_NAME/docker-in-docker-error.log"
+    echo "✅ Error logs saved to $DIR/$REPO_NAME/docker-in-docker-error.log"
 else
     echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
     sudo docker-compose -f "$COMPOSE_FILE" down
