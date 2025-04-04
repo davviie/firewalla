@@ -257,6 +257,16 @@ EOF
     echo "🔍 Saving error logs from the docker-in-docker container..."
     docker logs "$SERVICE_NAME" 2>&1 | grep -i "error" > "$DIR/$REPO_NAME/docker-in-docker-error.log"
     echo "✅ Error logs saved to $DIR/$REPO_NAME/docker-in-docker-error.log"
+
+    # Add alias for nested Docker
+    echo "🔗 Adding alias for nested Docker..."
+    ALIAS_COMMAND="alias docker='sudo docker exec -it $SERVICE_NAME docker'"
+    if ! grep -Fxq "$ALIAS_COMMAND" ~/.bashrc; then
+        echo "$ALIAS_COMMAND" >> ~/.bashrc
+        echo "✅ Alias added to ~/.bashrc. Run 'source ~/.bashrc' to apply it in the current session."
+    else
+        echo "ℹ️ Alias already exists in ~/.bashrc."
+    fi
 else
     echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
     sudo docker-compose -f "$COMPOSE_FILE" down
