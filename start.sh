@@ -171,8 +171,8 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     # Check if 'dockerd' is running
     echo "🔍 Checking if 'dockerd' is running inside the container..."
     if ! docker exec -it "$SERVICE_NAME" ps aux | grep -q "[d]ockerd"; then
-        echo "❌ 'dockerd' is not running inside the container. Check container logs for details."
-        docker logs "$SERVICE_NAME"
+        echo "❌ 'dockerd' is not running inside the container. Checking container logs for errors and warnings..."
+        docker logs "$SERVICE_NAME" 2>&1 | grep -E "error|warn|failed|restart" --ignore-case
         exit 1
     fi
 
