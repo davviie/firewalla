@@ -93,7 +93,7 @@ git remote set-url origin git@github.com:$GITHUB_USER/$REPO_NAME.git
 echo "📝 Creating docker-compose.yml..."
 
 cat <<EOF > "$DIR/docker-compose.yml"
-version: '3.8'
+
 services:
   $SERVICE_NAME:
     image: $DOCKER_IMAGE
