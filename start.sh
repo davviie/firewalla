@@ -134,9 +134,8 @@ services:
       - DOCKER_TLS_CERTDIR=
     volumes:
       - /var/lib/docker:/var/lib/docker
-      - /var/run/docker.sock:/var/run/docker.sock
       - $DIR:/repo
-    command: dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock
+    command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock
 EOF
 
 # Validate the Compose file
