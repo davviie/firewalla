@@ -111,7 +111,6 @@ fi
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
 cat <<EOF > "$COMPOSE_FILE"
-version: '3.8'
 services:
   $SERVICE_NAME:
     container_name: $SERVICE_NAME
