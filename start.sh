@@ -1,5 +1,23 @@
 #!/bin/bash
 
+# Define the custom group name
+CUSTOM_GROUP="firewalla"
+
+# Create the custom group if it doesn't exist
+if ! getent group "$CUSTOM_GROUP" >/dev/null; then
+    echo "🔧 Creating custom group '$CUSTOM_GROUP'..."
+    sudo groupadd "$CUSTOM_GROUP"
+    echo "✅ Group '$CUSTOM_GROUP' created."
+else
+    echo "ℹ️ Group '$CUSTOM_GROUP' already exists."
+fi
+
+# Add 'pi' and 'root' to the custom group
+echo "🔧 Adding 'pi' and 'root' to the '$CUSTOM_GROUP' group..."
+sudo usermod -aG "$CUSTOM_GROUP" pi
+sudo usermod -aG "$CUSTOM_GROUP" root
+echo "✅ 'pi' and 'root' added to the '$CUSTOM_GROUP' group."
+
 # Purge all Docker containers, images, volumes, and networks
 echo "🧹 Purging all Docker containers, images, volumes, and networks..."
 if [ -f "docker-compose.yml" ] || [ -f "docker-compose.yaml" ]; then
@@ -81,11 +99,12 @@ else
     echo "📁 Docker directory $DOCKER_DIR already exists."
 fi
 
-# Set permissions for the entire directory and subdirectories
-echo "🔧 Setting permissions for the entire directory and subdirectories..."
-sudo chmod -R 777 "$DIR"
-sudo chmod -R 777 "$DOCKER_DIR"
-echo "✅ Permissions set for $DIR and its subdirectories."
+# Set group ownership and permissions for the entire directory and subdirectories
+echo "🔧 Setting group ownership and permissions for the entire directory and subdirectories..."
+sudo chown -R root:"$CUSTOM_GROUP" "$DIR"
+sudo chmod -R 775 "$DIR"
+sudo chmod -R g+s "$DIR"  # Set the group sticky bit
+echo "✅ Group ownership and permissions set for $DIR and its subdirectories."
 
 # Clone the GitHub repo using SSH
 if [ ! -d "$DIR/$REPO_NAME" ]; then
