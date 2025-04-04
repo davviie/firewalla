@@ -20,7 +20,7 @@ if [ -n "$BRANCH_OPTION" ]; then
 fi
 
 # Define working directory
-DIR=~/firewalla-git
+DIR=~/firewalla
 
 # Check for Docker
 echo "Checking if Docker is installed..."
