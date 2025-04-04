@@ -1,13 +1,12 @@
 #!/bin/bash
 
 # Set the directory for the docker-compose.yml and other configurations
-DIR=~/davidlan
+DIR=~/firewalla-git
 
 # Check if Docker is installed and running
 echo "Checking if Docker is installed and running..."
-if ! command -v docker &> /dev/null
-then
-    echo "Docker is not installed. Please install Docker before proceeding."
+if ! command -v docker &> /dev/null; then
+    echo "Error: Docker is not installed. Please install Docker before proceeding."
     exit 1
 fi
 
@@ -46,9 +45,21 @@ services:
       "
 EOF
 
+# Validate docker-compose.yml
+echo "Validating docker-compose.yml..."
+docker-compose -f "$DIR/docker-compose.yml" config
+if [ $? -ne 0 ]; then
+    echo "Error: docker-compose.yml is invalid."
+    exit 1
+fi
+
 # Launch Docker
 echo "Starting Docker service..."
 sudo systemctl start docker
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to start Docker service."
+    exit 1
+fi
 
 # Enable Docker to start on boot
 echo "Enabling Docker to start on boot..."
@@ -57,13 +68,17 @@ sudo systemctl enable docker
 # Run Docker Compose for Docker in Docker container
 echo "Running Docker Compose to start Docker-in-Docker..."
 sudo docker-compose -f "$DIR/docker-compose.yml" up -d
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to start Docker Compose."
+    exit 1
+fi
 
 # Check if Docker in Docker is running
 echo "Checking if Docker-in-Docker is running..."
 if sudo docker ps | grep -q 'docker-in-docker'; then
     echo "Docker-in-Docker is running successfully."
 else
-    echo "Exiting with failure. Stopping the Docker Compose..."
+    echo "Error: Docker-in-Docker failed to start. Stopping Docker Compose..."
     sudo docker-compose down
     exit 1
 fi
