@@ -126,8 +126,7 @@ services:
       sh -c "
       if [ -f /etc/alpine-release ]; then
         echo 'Detected Alpine Linux. Using apk for package installation...' &&
-        apk add --no-cache curl ca-certificates &&
-        apk add --no-cache docker-cli docker-compose;
+        apk add --no-cache curl ca-certificates docker-cli docker-compose;
       elif [ -f /etc/os-release ] && grep -qi 'ubuntu\|debian' /etc/os-release; then
         echo 'Detected Ubuntu/Debian. Using apt-get for package installation...' &&
         apt-get update &&
