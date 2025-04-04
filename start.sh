@@ -98,6 +98,59 @@ else
     echo "✔️ Repository already exists."
 fi
 
+# Setup SSH for GitHub
+SSH_KEY=~/.ssh/id_rsa
+echo "🔐 Setting up SSH key..."
+
+# Check if SSH key exists
+if [ -f "$SSH_KEY" ]; then
+    read -p "SSH key already exists. Overwrite? (y/n): " OVERWRITE
+    if [[ "$OVERWRITE" == "y" ]]; then
+        rm -f "$SSH_KEY" "$SSH_KEY.pub"
+    fi
+fi
+
+# If key doesn't exist now, create it
+if [ ! -f "$SSH_KEY" ]; then
+    read -p "Enter your email for SSH key: " EMAIL
+    ssh-keygen -t rsa -b 4096 -C "$EMAIL" -f "$SSH_KEY" -N ""
+    echo "✅ SSH key generated."
+fi
+
+# Add to SSH agent
+eval "$(ssh-agent -s)"
+ssh-add "$SSH_KEY"
+
+# Show public key for GitHub
+echo "🔑 Copy this SSH public key to GitHub:"
+cat "$SSH_KEY.pub"
+echo "➡️  Visit: https://github.com/settings/keys"
+read -p "Press Enter after you've added the SSH key..."
+
+# Test SSH access
+echo "🔍 Testing SSH connection to GitHub..."
+if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+    echo "✅ SSH authentication successful."
+else
+    echo "❌ SSH authentication failed. Ensure the key is added to GitHub."
+    exit 1
+fi
+
+# Switch repo to SSH remote
+echo "🔁 Switching repository remote to SSH..."
+cd "$DIR/$REPO_NAME"
+git remote set-url origin git@github.com:$GITHUB_USER/$REPO_NAME.git
+
+# Determine if secure binding is possible
+TLS_CERT_DIR="/etc/docker/certs.d"
+if [ -d "$TLS_CERT_DIR" ] && [ -f "$TLS_CERT_DIR/ca.pem" ] && [ -f "$TLS_CERT_DIR/server-cert.pem" ] && [ -f "$TLS_CERT_DIR/server-key.pem" ]; then
+    echo "🔒 Secure binding is possible. Enabling --tlsverify..."
+    DOCKER_COMMAND="dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=vfs --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem"
+else
+    echo "⚠️ Secure binding is not possible. Falling back to insecure binding..."
+    DOCKER_COMMAND="dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=vfs --tls=false"
+fi
+
 # Determine the storage driver
 STORAGE_DRIVER="overlay2"
 if ! lsmod | grep -q overlay || ! df -T /var/lib/docker | grep -q -E "ext4|xfs"; then
@@ -111,6 +164,7 @@ fi
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
 cat <<EOF > "$COMPOSE_FILE"
+version: '3.3'
 services:
   $SERVICE_NAME:
     container_name: $SERVICE_NAME
@@ -162,22 +216,6 @@ sudo docker-compose -f "$COMPOSE_FILE" up -d || {
     echo "❌ Failed to start Docker Compose."
     exit 1
 }
-
-# Install the latest Docker Compose inside the docker-in-docker conta if not already installediner if not already installed
-echo "🔍 Checking if Docker Compose is already installed inside the docker-in-docker container..."
-if ! sudo docker exec -it "$SERVICE_NAME" docker-compose --version &>/dev/null; then
-    echo "🔄 Installing the latest Docker Compose inside the docker-in-docker container..."
-    sudo docker exec -it "$SERVICE_NAME" sh -c "
-        curl -L 'https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose &&
-        chmod +x /usr/local/bin/docker-compose &&
-        docker-compose --version
-    " || {
-        echo "❌ Failed to install Docker Compose inside the docker-in-docker container."
-        exit 1
-    }
-else
-    echo "✅ Docker Compose is already installed inside the docker-in-docker container."
-fi
 
 # Confirm container is running
 echo "🔍 Checking if container '$SERVICE_NAME' is running..."
