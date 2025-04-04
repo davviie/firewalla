@@ -118,6 +118,25 @@ echo "🔁 Switching repository remote to SSH..."
 cd "$DIR/$REPO_NAME"
 git remote set-url origin git@github.com:$GITHUB_USER/$REPO_NAME.git
 
+# Determine if secure binding is possible
+TLS_CERT_DIR="/etc/docker/certs.d"
+if [ -d "$TLS_CERT_DIR" ] && [ -f "$TLS_CERT_DIR/ca.pem" ] && [ -f "$TLS_CERT_DIR/server-cert.pem" ] && [ -f "$TLS_CERT_DIR/server-key.pem" ]; then
+    echo "🔒 Secure binding is possible. Enabling --tlsverify..."
+    DOCKER_COMMAND="dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=vfs --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem"
+else
+    echo "⚠️ Secure binding is not possible. Falling back to insecure binding..."
+    DOCKER_COMMAND="dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=vfs --tls=false"
+fi
+
+# Determine the storage driver
+STORAGE_DRIVER="overlay2"
+if ! lsmod | grep -q overlay || ! df -T /var/lib/docker | grep -q -E "ext4|xfs"; then
+    echo "⚠️ 'overlay2' storage driver is not supported. Falling back to 'vfs'..."
+    STORAGE_DRIVER="vfs"
+else
+    echo "✅ 'overlay2' storage driver is supported."
+fi
+
 # Create Compose file for docker-in-docker
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
@@ -133,7 +152,7 @@ services:
       - DOCKER_TLS_CERTDIR=
     volumes:
       - $DIR:/repo
-    command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2 --tls=false
+    command: dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
     deploy:
       resources:
         limits:
