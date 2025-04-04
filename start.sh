@@ -168,7 +168,20 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
 
     # Wait for Docker daemon to initialize
     echo "⏳ Waiting for Docker daemon to initialize..."
-    sleep 10
+    sleep 20
+
+    # Test Docker daemon connection
+    echo "🐳 Testing Docker daemon connection inside the container..."
+    if ! docker exec -it "$SERVICE_NAME" docker -H tcp://127.0.0.1:2375 info; then
+        echo "⚠️ Failed to connect via TCP. Falling back to Unix socket..."
+        DOCKER_HOST="unix:///var/run/docker.sock"
+    else
+        DOCKER_HOST="tcp://127.0.0.1:2375"
+    fi
+
+    # Run `docker ps` inside the Docker-in-Docker container
+    echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
+    docker exec -it "$SERVICE_NAME" docker -H "$DOCKER_HOST" ps
 
     # Check if Dockerfile exists in the repository directory
     if [ ! -f "$DIR/$REPO_NAME/Dockerfile" ]; then
@@ -182,13 +195,9 @@ EOF
         echo "✅ Default Dockerfile created at $DIR/$REPO_NAME/Dockerfile."
     fi
 
-    # Run `docker ps` inside the Docker-in-Docker container
-    echo "🐳 Running 'docker ps' inside the Docker-in-Docker container..."
-    docker exec -it "$SERVICE_NAME" docker -H tcp://127.0.0.1:2375 ps
-
     # Run `docker build` inside the Docker-in-Docker container
     echo "🐳 Running 'docker build .' inside the Docker-in-Docker container..."
-    docker exec -it "$SERVICE_NAME" docker -H tcp://127.0.0.1:2375 build -f /repo/firewalla/Dockerfile /repo/firewalla
+    docker exec -it "$SERVICE_NAME" docker -H "$DOCKER_HOST" build -f /repo/firewalla/Dockerfile /repo/firewalla
 else
     echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
     sudo docker-compose -f "$COMPOSE_FILE" down
