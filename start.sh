@@ -14,7 +14,7 @@ fi
 
 # Add 'pi' to the custom group
 echo "🔧 Adding 'pi' to the '$CUSTOM_GROUP' group..."
-usermod -aG "$CUSTOM_GROUP" pi
+sudo usermod -aG "$CUSTOM_GROUP" pi
 echo "✅ 'pi' added to the '$CUSTOM_GROUP' group."
 
 # Define working directory
