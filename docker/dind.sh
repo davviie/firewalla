@@ -67,7 +67,7 @@ if ! docker login >/dev/null 2>&1; then
     echo "🔐 Authentication required for Docker Hub."
     read -p "Enter your Docker Hub username: " DOCKER_USER
     read -s -p "Enter your Docker Hub password: " DOCKER_PASS
-    echo
+    echo  # Add a newline after the password input
     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin || {
         echo "❌ Failed to authenticate with Docker Hub."
         exit 1
