@@ -264,36 +264,37 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     fi
 
     echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
+# Add alias for nested Docker
+echo "🔗 Adding alias for nested Docker..."
+ALIAS_COMMAND="alias docker='sudo docker exec -it $SERVICE_NAME docker'"
+ALIAS_COMMAND_COMPOSE="alias docker-compose='sudo docker exec -it $SERVICE_NAME docker-compose'"
 
-    # Add alias for nested Docker
-    echo "🔗 Adding alias for nested Docker..."
-    ALIAS_COMMAND="alias docker='sudo docker exec -it $SERVICE_NAME docker'"
-
-    # Remove invalid references to non-existent files in ~/.bashrc
-    if grep -q "/home/pi/firewalla/scripts/alias.sh" ~/.bashrc; then
-        echo "⚠️ Removing invalid reference to /home/pi/firewalla/scripts/alias.sh from ~/.bashrc..."
-        sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
-    fi
-
-    # Add the alias if it doesn't already exist
-    if ! grep -Fxq "$ALIAS_COMMAND" ~/.bashrc; then
-        echo "$ALIAS_COMMAND" >> ~/.bashrc
-        echo "✅ Alias added to ~/.bashrc. Run 'source ~/.bashrc' to apply it in the current session."
-    else
-        echo "ℹ️ Alias already exists in ~/.bashrc."
-    fi
-
-    # Test nested Docker functionality
-    echo "🔍 Testing nested Docker functionality..."
-    if sudo docker exec -it "$SERVICE_NAME" docker run --rm alpine echo "Hello from nested Docker!"; then
-        echo "✅ Nested Docker is working correctly."
-    else
-        echo "❌ Nested Docker test failed. Please check the setup."
-    fi
-else
-    echo "❌ Container '$SERVICE_NAME' is not running. Skipping nested Docker commands."
-    sudo docker-compose -f "$COMPOSE_FILE" down
-    exit 1
+# Remove invalid references to non-existent files in ~/.bashrc
+if grep -q "/home/pi/firewalla/scripts/alias.sh" ~/.bashrc; then
+    echo "⚠️ Removing invalid reference to /home/pi/firewalla/scripts/alias.sh from ~/.bashrc..."
+    sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
 fi
 
-echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
+# Add the docker alias if it doesn't already exist
+if ! grep -Fxq "$ALIAS_COMMAND" ~/.bashrc; then
+    echo "$ALIAS_COMMAND" >> ~/.bashrc
+    echo "✅ Alias for 'docker' added to ~/.bashrc. Run 'source ~/.bashrc' to apply it in the current session."
+else
+    echo "ℹ️ Alias for 'docker' already exists in ~/.bashrc."
+fi
+
+# Add the docker-compose alias if it doesn't already exist
+if ! grep -Fxq "$ALIAS_COMMAND_COMPOSE" ~/.bashrc; then
+    echo "$ALIAS_COMMAND_COMPOSE" >> ~/.bashrc
+    echo "✅ Alias for 'docker-compose' added to ~/.bashrc. Run 'source ~/.bashrc' to apply it in the current session."
+else
+    echo "ℹ️ Alias for 'docker-compose' already exists in ~/.bashrc."
+fi
+
+# Test nested Docker functionality
+echo "🔍 Testing nested Docker functionality..."
+if sudo docker exec -it "$SERVICE_NAME" docker run --rm alpine echo "Hello from nested Docker!"; then
+    echo "✅ Nested Docker is working correctly."
+else
+    echo "❌ Nested Docker test failed. Please check the setup."
+fi

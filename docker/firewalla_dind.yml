@@ -26,8 +26,8 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      TZ: ${PIHOLE_TZ}
-      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
+      TZ: America/Montreal
+      WEBPASSWORD: p0tat0
     volumes:
       - ./pihole_config:/etc/pihole
       - ./dnsmasq_config:/etc/dnsmasq.d
