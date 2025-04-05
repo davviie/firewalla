@@ -299,4 +299,8 @@ else
     echo "❌ Nested Docker test failed. Please check the setup."
 fi
 
-echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
+
+else
+    echo "❌ $SERVICE_NAME is not running. Please check the setup."
+    exit 1
+fi
