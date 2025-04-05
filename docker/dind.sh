@@ -63,14 +63,14 @@ fi
 
 # Validate the Docker Compose file
 echo "🔍 Validating firewalla_dind.yml..."
-docker-compose -f firewalla_dind.yml config || {
+dind-compose -f firewalla_dind.yml config || {
     echo "❌ firewalla_dind.yml is invalid."
     exit 1
 }
 
 # Start the services using Docker Compose
 echo "📦 Launching services defined in firewalla_dind.yml..."
-docker-compose -f firewalla_dind.yml up -d || {
+dind-compose -f firewalla_dind.yml up -d || {
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
