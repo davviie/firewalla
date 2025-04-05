@@ -9,6 +9,11 @@ if ! id -u pi >/dev/null 2>&1; then
     # Set a default password for the 'pi' user
     echo "pi:raspberry" | sudo chpasswd
     echo "ℹ️ Default password for 'pi' is set to 'raspberry'. Please change it later for security."
+
+    # Add 'pi' to the sudo group
+    echo "🔧 Adding 'pi' to the 'sudo' group..."
+    sudo usermod -aG sudo pi
+    echo "✅ User 'pi' added to the 'sudo' group."
 fi
 
 # Ensure the script is run as the 'pi' user
