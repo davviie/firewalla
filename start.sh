@@ -15,6 +15,12 @@ if ! id -u pi >/dev/null 2>&1; then
     sudo usermod -aG sudo pi
     echo "✅ User 'pi' added to the 'sudo' group."
 
+    # Force group membership to take effect
+    echo "🔄 Refreshing group membership for 'pi'..."
+    newgrp sudo <<EOF
+    echo "✅ Group membership refreshed for 'pi'."
+EOF
+
     # Add 'pi' to the sudoers file
     echo "🔧 Adding 'pi' to the sudoers file..."
     echo "pi ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/pi >/dev/null
