@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Ensure the 'pi' user exists
+if ! id -u pi >/dev/null 2>&1; then
+    echo "🔧 User 'pi' does not exist. Creating the 'pi' user..."
+    sudo useradd -m -s /bin/bash pi
+    echo "✅ User 'pi' created successfully."
+
+    # Set a default password for the 'pi' user
+    echo "pi:raspberry" | sudo chpasswd
+    echo "ℹ️ Default password for 'pi' is set to 'raspberry'. Please change it later for security."
+fi
+
 # Ensure the script is run as the 'pi' user
 if [ "$(whoami)" != "pi" ]; then
     echo "❌ This script must be run as the 'pi' user."
