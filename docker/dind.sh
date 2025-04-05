@@ -46,7 +46,7 @@ ENV_FILE=./.env
 echo "✅ Environment variables written to $ENV_FILE"
 
 # Navigate to the directory containing the Docker Compose file
-DOCKER_DIR=~/firewalla/docker
+DOCKER_DIR=$(pwd)
 cd "$DOCKER_DIR" || {
     echo "❌ Failed to navigate to $DOCKER_DIR. Please check if the directory exists."
     exit 1
