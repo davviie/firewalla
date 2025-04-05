@@ -5,70 +5,101 @@
 ## Prerequisites
 - Ensure your Firewalla device has Docker and Git installed.
 - Ensure the `pi` user has the necessary permissions to run the scripts.
+- The `start.sh` script will automatically create a custom group (`firewalla`) and add the `pi` user to it.
 
-# ---
+---
 
 ## Setup Instructions
-# Copy and paste the following commands into your CLI to set up Docker-in-Docker on Firewalla:
+Follow these steps to set up Docker-in-Docker on Firewalla:
 
+### 1. Clone the Repository
 ```bash
-# Clone the repository
-sudo git clone https://github.com/davviie/firewalla.git ~/firewalla
+git clone https://github.com/davviie/firewalla.git ~/firewalla
+```
 
-# Navigate to the repository directory
+### 2. Navigate to the Repository Directory
+```bash
 cd ~/firewalla
+```
 
-# Make the setup script executable
-sudo chmod +x start.sh
+### 3. Make the Setup Script Executable
+```bash
+chmod +x start.sh
+```
 
-# Run the setup script
-sudo ./start.sh
+### 4. Run the Setup Script as the `pi` User
+The `start.sh` script will:
+- Create the `firewalla` group (if it doesn’t already exist).
+- Add the `pi` user to the `firewalla` group.
+- Set up permissions and ownership for the `~/firewalla` directory.
+- Pull the necessary Docker images and set up Docker-in-Docker.
 
-# If you encounter permission issues, ensure the repository directory is writable
-sudo chmod -R 777 ~/firewalla
+Run the script:
+```bash
+./start.sh
+```
 
-# To check the logs of the `docker-in-docker` container
-sudo docker logs docker-in-docker
+### 5. Navigate to the Docker Directory
+```bash
+cd ~/firewalla/docker
+```
 
-# To check only error logs of the `docker-in-docker` container
-sudo docker logs docker-in-docker 2>&1 | grep -i "error"
+### 6. Run the `dind.sh` Script as the `pi` User
+The `dind.sh` script will:
+- Prompt you to configure environment variables.
+- Validate the `firewalla_dind.yml` file.
+- Launch the services defined in the `firewalla_dind.yml` file.
 
-# To re-run the setup script after cleaning up
-cd ~/firewalla
-sudo ./start.sh
-
-# Run a test container inside the Docker-in-Docker container
-sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from nested Docker!"
-
-# Check error logs
-sudo cat ~/firewalla/docker-in-docker-error.log
-docker run --rm alpine echo "Hello from nested Docker!"
-# Automate cleanup of invalid references in ~/.bashrc
-echo "🔧 Cleaning up invalid references in ~/.bashrc..."
-sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
-echo "✅ Invalid references removed from ~/.bashrc."
-
-# Reload the shell configuration
-source ~/.bashrc
-echo "✅ Shell configuration reloaded. You can now use the 'docker' alias for nested Docker."
+Run the script:
+```bash
+./dind.sh
 ```
 
 ---
 
 ## Features
-# - **Dynamic Storage Driver Selection**:
-#   Automatically uses `overlay2` if supported; falls back to `vfs` otherwise.
-# - **Secure/Insecure Binding**:
-#   Enables `--tlsverify` if certificates are available; otherwise, falls back to insecure binding.
-# - **Error Log Saving**:
-#   Saves error logs from the `docker-in-docker` container to `docker-in-docker-error.log` in the repository directory.
+- **Dynamic Storage Driver Selection**:
+  Automatically uses `overlay2` if supported; falls back to `vfs` otherwise.
+- **Secure/Insecure Binding**:
+  Enables `--tlsverify` if certificates are available; otherwise, falls back to insecure binding.
+- **Group-Based Permissions**:
+  Ensures both `pi` and `root` users have access to the `~/firewalla` directory and its subdirectories.
 
-# ---
+---
 
 ## Troubleshooting
-# If you encounter an error like `-bash: /home/pi/firewalla/scripts/alias.sh: No such file or directory`, the above commands will automatically clean up invalid references in `~/.bashrc`.
 
-# ---
+### Permission Issues
+If you encounter permission issues, ensure the `pi` user owns the `~/firewalla` directory:
+```bash
+sudo chown -R pi:firewalla ~/firewalla
+sudo chmod -R 775 ~/firewalla
+```
+
+### Missing `firewalla_dind.yml`
+If the `firewalla_dind.yml` file is not found, ensure it exists in the `~/firewalla/docker` directory:
+```bash
+ls ~/firewalla/docker/firewalla_dind.yml
+```
+
+### Check Logs
+To check the logs of the `docker-in-docker` container:
+```bash
+docker logs docker-in-docker
+```
+
+To check only error logs:
+```bash
+docker logs docker-in-docker 2>&1 | grep -i "error"
+```
+
+### Nested Docker Test
+To test if nested Docker is working correctly:
+```bash
+sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from nested Docker!"
+```
+
+---
 
 ## License
-# This repository is licensed under the MIT License. Feel free to modify and use it as needed.
+This repository is licensed under the MIT License. Feel free to modify and use it as needed.
