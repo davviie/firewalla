@@ -8,8 +8,8 @@ fi
 
 # Define default values for environment variables
 DEFAULT_NEXTDNS_CONFIG="default_config_id"
-DEFAULT_PIHOLE_TZ="UTC"
-DEFAULT_PIHOLE_WEBPASSWORD="admin"
+DEFAULT_PIHOLE_TZ="America/Toronto"
+DEFAULT_PIHOLE_WEBPASSWORD="p0tat0"
 DEFAULT_PORTAINER_PORT="9000"
 
 # Prompt the user for environment variable values (or use defaults)
