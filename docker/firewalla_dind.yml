@@ -10,8 +10,12 @@ services:
     container_name: nextdns
     restart: unless-stopped
     network_mode: host
-    environment:
-      - NEXTDNS_CONFIG=${NEXTDNS_CONFIG}
+    volumes:
+      - ./nextdns_config:/etc/nextdns
+    cap_add:
+      - NET_ADMIN
+    #environment:
+    # - NEXTDNS_CONFIG=${NEXTDNS_CONFIG}
     command: run
     healthcheck:
       test: ["CMD", "nextdns", "status"]
