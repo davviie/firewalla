@@ -298,3 +298,4 @@ if sudo docker exec -it "$SERVICE_NAME" docker run --rm alpine echo "Hello from 
 else
     echo "❌ Nested Docker test failed. Please check the setup."
 fi
+echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
