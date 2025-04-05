@@ -39,10 +39,15 @@ fi
 
 # Set group ownership and permissions for the entire directory and subdirectories
 echo "🔧 Setting group ownership and permissions for the entire directory and subdirectories..."
-chown -R pi:"$CUSTOM_GROUP" "$DIR"
-chmod -R 775 "$DIR"
-chmod -R g+s "$DIR"  # Set the group sticky bit
+sudo chown -R pi:"$CUSTOM_GROUP" "$DIR"
+sudo chmod -R 775 "$DIR"
+sudo chmod -R g+s "$DIR"  # Set the group sticky bit
 echo "✅ Group ownership and permissions set for $DIR and its subdirectories."
+
+# Ensure the pi user owns the ~/firewalla directory
+echo "🔧 Ensuring 'pi' user owns the ~/firewalla directory..."
+sudo chown -R pi:firewalla ~/firewalla
+echo "✅ Ownership set for ~/firewalla."
 
 # Purge all Docker containers, images, volumes, and networks
 echo "🧹 Purging all Docker containers, images, volumes, and networks..."
