@@ -7,7 +7,7 @@ if [ "$(whoami)" != "pi" ]; then
 fi
 
 # Define default values for environment variables
-DEFAULT_NEXTDNS_CONFIG="default_config_id"
+DEFAULT_NEXTDNS_CONFIG="dfa3a4"
 DEFAULT_PIHOLE_TZ="America/Toronto"
 DEFAULT_PIHOLE_WEBPASSWORD="p0tat0"
 DEFAULT_PORTAINER_PORT="9000"

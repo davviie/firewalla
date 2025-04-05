@@ -3,9 +3,6 @@
 # and a Debian container for various utilities. It also includes optional containers for Portainer
 # (Docker management) and Watchtower (automatic updates).
 # Define environment variables at the top
-
-version: "3.8"
-
 services:
   nextdns:
     image: nextdns/nextdns
@@ -29,8 +26,8 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      TZ: "${PIHOLE_TZ:-UTC}"
-      WEBPASSWORD: "${PIHOLE_WEBPASSWORD:-changeme}"
+      TZ: ${PIHOLE_TZ:-UTC}
+      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
     volumes:
       - ./pihole_config:/etc/pihole
       - ./dnsmasq_config:/etc/dnsmasq.d
@@ -66,7 +63,7 @@ services:
     container_name: portainer
     restart: unless-stopped
     ports:
-      - "${PORTAINER_PORT:-9000}:9000"
+      - ${PORTAINER_PORT}:9000
     volumes:
       - ./portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
