@@ -65,6 +65,8 @@ fi
 echo "🔑 Authenticating with Docker Hub..."
 if ! docker login >/dev/null 2>&1; then
     echo "🔐 Authentication required for Docker Hub."
+    # Flush input buffer to avoid issues
+    read -t 1 -n 10000 discard_input 2>/dev/null || true
     read -p "Enter your Docker Hub username: " DOCKER_USER
     read -s -p "Enter your Docker Hub password: " DOCKER_PASS
     echo  # Add a newline after the password input
@@ -119,5 +121,7 @@ docker-compose -H unix:///var/run/docker.sock -f firewalla_dind.yml up -d || {
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
+
+export BROWSER=xdg-open
 
 echo "🎉 Services are up and running!"
