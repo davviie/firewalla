@@ -14,6 +14,12 @@ if ! id -u pi >/dev/null 2>&1; then
     echo "🔧 Adding 'pi' to the 'sudo' group..."
     sudo usermod -aG sudo pi
     echo "✅ User 'pi' added to the 'sudo' group."
+
+    # Add 'pi' to the sudoers file
+    echo "🔧 Adding 'pi' to the sudoers file..."
+    echo "pi ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/pi >/dev/null
+    sudo chmod 0440 /etc/sudoers.d/pi
+    echo "✅ 'pi' added to the sudoers file with passwordless sudo access."
 fi
 
 # Ensure the script is run as the 'pi' user
