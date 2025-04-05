@@ -3,6 +3,8 @@
 # and a Debian container for various utilities. It also includes optional containers for Portainer
 # (Docker management) and Watchtower (automatic updates).
 # Define environment variables at the top
+# version: '3.8'
+
 services:
   nextdns:
     image: nextdns/nextdns
@@ -63,7 +65,7 @@ services:
     container_name: portainer
     restart: unless-stopped
     ports:
-      - 9100:9000
+      - "9100:9000"  # Added quotes around the port mapping
     volumes:
       - ./portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
