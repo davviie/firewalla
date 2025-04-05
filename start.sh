@@ -9,19 +9,24 @@ if ! id -u pi >/dev/null 2>&1; then
     # Set a default password for the 'pi' user
     echo "pi:raspberry" | sudo chpasswd
     echo "ℹ️ Default password for 'pi' is set to 'raspberry'. Please change it later for security."
+else
+    echo "ℹ️ User 'pi' already exists."
+fi
 
-    # Add 'pi' to the sudo group
-    echo "🔧 Adding 'pi' to the 'sudo' group..."
-    sudo usermod -aG sudo pi
-    echo "✅ User 'pi' added to the 'sudo' group."
+# Add 'pi' to the sudo and docker groups
+echo "🔧 Adding 'pi' to the 'sudo' and 'docker' groups..."
+sudo usermod -aG sudo pi
+sudo usermod -aG docker pi
+echo "✅ User 'pi' added to the 'sudo' and 'docker' groups."
 
-    # Add 'pi' to the sudoers file
+# Add 'pi' to the sudoers file
+if [ ! -f /etc/sudoers.d/pi ]; then
     echo "🔧 Adding 'pi' to the sudoers file..."
     echo "pi ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/pi >/dev/null
     sudo chmod 0440 /etc/sudoers.d/pi
     echo "✅ 'pi' added to the sudoers file with passwordless sudo access."
 else
-    echo "ℹ️ User 'pi' already exists."
+    echo "ℹ️ 'pi' is already in the sudoers file."
 fi
 
 # Check if the script is being run as the 'pi' user

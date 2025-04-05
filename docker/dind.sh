@@ -45,6 +45,22 @@ ENV_FILE=./.env
 }
 echo "✅ Environment variables written to $ENV_FILE"
 
+# Authenticate with GitHub Container Registry
+echo "🔑 Authenticating with GitHub Container Registry (ghcr.io)..."
+if ! docker login ghcr.io >/dev/null 2>&1; then
+    echo "🔐 Authentication required for ghcr.io."
+    read -p "Enter your GitHub username: " GITHUB_USER
+    read -s -p "Enter your GitHub Personal Access Token (PAT): " GITHUB_PAT
+    echo
+    echo "$GITHUB_PAT" | docker login ghcr.io -u "$GITHUB_USER" --password-stdin || {
+        echo "❌ Failed to authenticate with GitHub Container Registry."
+        exit 1
+    }
+    echo "✅ Successfully authenticated with ghcr.io."
+else
+    echo "✅ Already authenticated with ghcr.io."
+fi
+
 # Navigate to the directory containing the Docker Compose file
 DOCKER_DIR=$(pwd)
 cd "$DOCKER_DIR" || {
@@ -63,14 +79,14 @@ fi
 
 # Validate the Docker Compose file
 echo "🔍 Validating firewalla_dind.yml..."
-dind-compose -f firewalla_dind.yml config || {
+docker-compose -H unix:///var/run/docker.sock -f firewalla_dind.yml config || {
     echo "❌ firewalla_dind.yml is invalid."
     exit 1
 }
 
 # Start the services using Docker Compose
 echo "📦 Launching services defined in firewalla_dind.yml..."
-dind-compose -f firewalla_dind.yml up -d || {
+docker-compose -H unix:///var/run/docker.sock -f firewalla_dind.yml up -d || {
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
