@@ -268,7 +268,7 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     # Define aliases for Docker-in-Docker
     ALIAS_DOCKER="alias dind='sudo docker exec -it docker-in-docker docker'"
     ALIAS_DOCKER_COMPOSE="alias dind-compose='sudo docker exec -it docker-in-docker docker-compose'"
-    ALIAS_DOCKER_SPACE_COMPOSE="alias 'dind compose'='sudo docker exec -it docker-in-docker docker compose'"
+    ALIAS_DOCKER_SPACE_COMPOSE="alias dindcompose='sudo docker exec -it docker-in-docker docker compose'"  # Changed alias name
 
     # Ensure ~/.bashrc exists before making modifications
     if [ ! -f ~/.bashrc ]; then
@@ -279,7 +279,7 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     # Remove previous conflicting aliases if they exist
     sed -i '/alias dind=/d' ~/.bashrc
     sed -i '/alias dind-compose=/d' ~/.bashrc
-    sed -i '/alias dind compose=/d' ~/.bashrc
+    sed -i '/alias dindcompose=/d' ~/.bashrc  # Updated alias name
 
     # Add the new aliases if they don't already exist
     if ! grep -Fxq "$ALIAS_DOCKER" ~/.bashrc; then
@@ -298,13 +298,17 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
 
     if ! grep -Fxq "$ALIAS_DOCKER_SPACE_COMPOSE" ~/.bashrc; then
         echo "$ALIAS_DOCKER_SPACE_COMPOSE" >> ~/.bashrc
-        echo "✅ Alias for 'dind compose' added to ~/.bashrc."
+        echo "✅ Alias for 'dindcompose' added to ~/.bashrc."
     else
-        echo "ℹ️ Alias for 'dind compose' already exists in ~/.bashrc."
+        echo "ℹ️ Alias for 'dindcompose' already exists in ~/.bashrc."
     fi
 
     # Inform the user about sourcing ~/.bashrc
-    echo "⚠️ Please run 'source ~/.bashrc' in the current session or restart the terminal for changes to take effect."
+    echo "⚠️ Please run 'source ~/.bashrc' in the current session to apply the aliases, or restart your terminal."
+    echo "ℹ️ After sourcing, you can use the following aliases:"
+    echo "   - dind: Run Docker commands inside the 'docker-in-docker' container."
+    echo "   - dind-compose: Run Docker Compose inside the 'docker-in-docker' container."
+    echo "   - dindcompose: Run Docker Compose (space-separated syntax) inside the 'docker-in-docker' container."
 
     # Test nested Docker functionality
     echo "🔍 Testing nested Docker functionality with 'dind'..."
