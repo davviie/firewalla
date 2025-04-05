@@ -61,6 +61,35 @@ else
     echo "✅ Already authenticated with ghcr.io."
 fi
 
+# Authenticate with Docker Hub
+echo "🔑 Authenticating with Docker Hub..."
+if ! docker login >/dev/null 2>&1; then
+    echo "🔐 Authentication required for Docker Hub."
+    read -p "Enter your Docker Hub username: " DOCKER_USER
+    read -s -p "Enter your Docker Hub password: " DOCKER_PASS
+    echo
+    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin || {
+        echo "❌ Failed to authenticate with Docker Hub."
+        exit 1
+    }
+    echo "✅ Successfully authenticated with Docker Hub."
+else
+    echo "✅ Already authenticated with Docker Hub."
+fi
+
+# Authenticate with GitHub CLI
+echo "🔑 Authenticating with GitHub CLI..."
+if ! gh auth status >/dev/null 2>&1; then
+    echo "🔐 Authentication required for GitHub CLI."
+    gh auth login || {
+        echo "❌ Failed to authenticate with GitHub CLI."
+        exit 1
+    }
+    echo "✅ Successfully authenticated with GitHub CLI."
+else
+    echo "✅ Already authenticated with GitHub CLI."
+fi
+
 # Navigate to the directory containing the Docker Compose file
 DOCKER_DIR=$(pwd)
 cd "$DOCKER_DIR" || {
