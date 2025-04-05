@@ -265,77 +265,54 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
 
     echo "🎉 Setup complete! '$SERVICE_NAME' is running with nested Docker Compose."
 
+    # Define aliases for Docker-in-Docker
+    ALIAS_DOCKER="alias dind='sudo docker exec -it docker-in-docker docker'"
+    ALIAS_DOCKER_COMPOSE="alias dind-compose='sudo docker exec -it docker-in-docker docker-compose'"
+    ALIAS_DOCKER_SPACE_COMPOSE="alias 'dind compose'='sudo docker exec -it docker-in-docker docker compose'"
 
-# Remove previous conflicting aliases if they exist
-sed -i '/alias docker=/d' ~/.bashrc
-sed -i '/alias docker-compose=/d' ~/.bashrc
-sed -i '/alias docker compose=/d' ~/.bashrc
+    # Ensure ~/.bashrc exists before making modifications
+    if [ ! -f ~/.bashrc ]; then
+        echo "❌ ~/.bashrc does not exist. Creating a new one..."
+        touch ~/.bashrc
+    fi
 
-# Add the docker alias if it doesn't already exist
-echo "$ALIAS_COMMAND" >> ~/.bashrc
-echo "$ALIAS_COMMAND_COMPOSE" >> ~/.bashrc
-echo "$ALIAS_COMMAND_COMPOSE2" >> ~/.bashrc
-echo "✅ Alias for 'docker', docker compose and 'docker-compose' added to ~/.bashrc."
-echo "⚠️ Please run 'source ~/.bashrc' in the current session or restart the terminal for changes to take effect."
+    # Remove previous conflicting aliases if they exist
+    sed -i '/alias dind=/d' ~/.bashrc
+    sed -i '/alias dind-compose=/d' ~/.bashrc
+    sed -i '/alias dind compose=/d' ~/.bashrc
 
-# Add alias for nested Docker
-echo "🔗 Adding alias for nested Docker..."
-ALIAS_COMMAND="alias docker='sudo docker exec -it $SERVICE_NAME docker'"
-ALIAS_COMMAND_COMPOSE="alias docker-compose='sudo docker exec -it $SERVICE_NAME docker-compose'"
-ALIAS_COMMAND_COMPOSE2="alias docker compose='sudo docker exec -it $SERVICE_NAME docker compose'"
+    # Add the new aliases if they don't already exist
+    if ! grep -Fxq "$ALIAS_DOCKER" ~/.bashrc; then
+        echo "$ALIAS_DOCKER" >> ~/.bashrc
+        echo "✅ Alias for 'dind' added to ~/.bashrc."
+    else
+        echo "ℹ️ Alias for 'dind' already exists in ~/.bashrc."
+    fi
 
-# Ensure ~/.bashrc exists before making modifications
-if [ ! -f ~/.bashrc ]; then
-    echo "❌ ~/.bashrc does not exist. Creating a new one..."
-    touch ~/.bashrc
-fi
+    if ! grep -Fxq "$ALIAS_DOCKER_COMPOSE" ~/.bashrc; then
+        echo "$ALIAS_DOCKER_COMPOSE" >> ~/.bashrc
+        echo "✅ Alias for 'dind-compose' added to ~/.bashrc."
+    else
+        echo "ℹ️ Alias for 'dind-compose' already exists in ~/.bashrc."
+    fi
 
-# Remove invalid references to non-existent files in ~/.bashrc
-if grep -q "/home/pi/firewalla/scripts/alias.sh" ~/.bashrc; then
-    echo "⚠️ Removing invalid reference to /home/pi/firewalla/scripts/alias.sh from ~/.bashrc..."
-    sed -i '/\/home\/pi\/firewalla\/scripts\/alias.sh/d' ~/.bashrc
-fi
+    if ! grep -Fxq "$ALIAS_DOCKER_SPACE_COMPOSE" ~/.bashrc; then
+        echo "$ALIAS_DOCKER_SPACE_COMPOSE" >> ~/.bashrc
+        echo "✅ Alias for 'dind compose' added to ~/.bashrc."
+    else
+        echo "ℹ️ Alias for 'dind compose' already exists in ~/.bashrc."
+    fi
 
-# Remove previous conflicting aliases if they exist
-sed -i '/alias docker=/d' ~/.bashrc
-sed -i '/alias docker-compose=/d' ~/.bashrc
-sed -i '/alias docker compose=/d' ~/.bashrc
+    # Inform the user about sourcing ~/.bashrc
+    echo "⚠️ Please run 'source ~/.bashrc' in the current session or restart the terminal for changes to take effect."
 
-# Add the docker alias if it doesn't already exist
-if ! grep -Fxq "$ALIAS_COMMAND" ~/.bashrc; then
-    echo "$ALIAS_COMMAND" >> ~/.bashrc
-    echo "✅ Alias for 'docker' added to ~/.bashrc."
-else
-    echo "ℹ️ Alias for 'docker' already exists in ~/.bashrc."
-fi
-
-# Add the docker-compose alias if it doesn't already exist
-if ! grep -Fxq "$ALIAS_COMMAND_COMPOSE" ~/.bashrc; then
-    echo "$ALIAS_COMMAND_COMPOSE" >> ~/.bashrc
-    echo "✅ Alias for 'docker-compose' added to ~/.bashrc."
-else
-    echo "ℹ️ Alias for 'docker-compose' already exists in ~/.bashrc."
-fi
-
-# Add the docker compose alias if it doesn't already exist
-if ! grep -Fxq "$ALIAS_COMMAND_COMPOSE2" ~/.bashrc; then
-    echo "$ALIAS_COMMAND_COMPOSE2" >> ~/.bashrc
-    echo "✅ Alias for 'docker compose' added to ~/.bashrc."
-else
-    echo "ℹ️ Alias for 'docker compose' already exists in ~/.bashrc."
-fi
-
-# Inform the user about sourcing ~/.bashrc
-echo "⚠️ Please run 'source ~/.bashrc' in the current session or restart the terminal for changes to take effect."
-
-# Test nested Docker functionality
-echo "🔍 Testing nested Docker functionality..."
-if sudo docker exec -it "$SERVICE_NAME" docker run --rm alpine echo "Hello from nested Docker!"; then
-    echo "✅ Nested Docker is working correctly."
-else
-    echo "❌ Nested Docker test failed. Please check the setup."
-fi
-
+    # Test nested Docker functionality
+    echo "🔍 Testing nested Docker functionality with 'dind'..."
+    if sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from nested Docker!"; then
+        echo "✅ Nested Docker is working correctly with 'dind'."
+    else
+        echo "❌ Nested Docker test failed. Please check the setup."
+    fi
 
 else
     echo "❌ $SERVICE_NAME is not running. Please check the setup."
