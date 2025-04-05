@@ -1,12 +1,26 @@
 #!/bin/bash
 
+# Ensure the script is run as the 'pi' user
+if [ "$(whoami)" != "pi" ]; then
+    echo "❌ This script must be run as the 'pi' user."
+    echo "ℹ️ Please switch to the 'pi' user by running: su - pi"
+    exit 1
+fi
+
+# Check if the 'pi' user has sudo privileges
+if ! sudo -v >/dev/null 2>&1; then
+    echo "❌ The 'pi' user does not have sudo privileges."
+    echo "ℹ️ Please ensure the 'pi' user has sudo access before running this script."
+    exit 1
+fi
+
 # Define the custom group name
 CUSTOM_GROUP="firewalla"
 
 # Create the custom group if it doesn't exist
 if ! getent group "$CUSTOM_GROUP" >/dev/null; then
     echo "🔧 Creating custom group '$CUSTOM_GROUP'..."
-    groupadd "$CUSTOM_GROUP"
+    sudo groupadd "$CUSTOM_GROUP"  # Added sudo here
     echo "✅ Group '$CUSTOM_GROUP' created."
 else
     echo "ℹ️ Group '$CUSTOM_GROUP' already exists."
@@ -193,6 +207,7 @@ fi
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
 cat <<EOF > "$COMPOSE_FILE"
+version: '3.8'
 services:
   $SERVICE_NAME:
     container_name: $SERVICE_NAME
