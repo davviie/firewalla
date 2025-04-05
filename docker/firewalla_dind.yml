@@ -4,6 +4,8 @@
 # (Docker management) and Watchtower (automatic updates).
 # Define environment variables at the top
 
+version: "3.8"
+
 services:
   nextdns:
     image: nextdns/nextdns
@@ -14,19 +16,12 @@ services:
       - ./nextdns_config:/etc/nextdns
     cap_add:
       - NET_ADMIN
-    #environment:
-    # - NEXTDNS_CONFIG=${NEXTDNS_CONFIG}
     command: run
     healthcheck:
       test: ["CMD", "nextdns", "status"]
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: "256M"
 
   pihole:
     image: pihole/pihole:latest
@@ -34,8 +29,8 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      TZ: ${PIHOLE_TZ}
-      WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
+      TZ: "${PIHOLE_TZ:-UTC}"
+      WEBPASSWORD: "${PIHOLE_WEBPASSWORD:-changeme}"
     volumes:
       - ./pihole_config:/etc/pihole
       - ./dnsmasq_config:/etc/dnsmasq.d
@@ -44,11 +39,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: "512M"
 
   github-cli:
     image: ghcr.io/cli/cli:latest
@@ -76,7 +66,7 @@ services:
     container_name: portainer
     restart: unless-stopped
     ports:
-      - ${PORTAINER_PORT}
+      - "${PORTAINER_PORT:-9000}:9000"
     volumes:
       - ./portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
