@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      TZ: ${PIHOLE_TZ:-UTC}
+      TZ: ${PIHOLE_TZ}
       WEBPASSWORD: ${PIHOLE_WEBPASSWORD}
     volumes:
       - ./pihole_config:/etc/pihole
