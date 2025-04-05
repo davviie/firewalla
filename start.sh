@@ -282,7 +282,7 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     # Define aliases for Docker-in-Docker
     ALIAS_DOCKER="alias dind='sudo docker exec -it docker-in-docker docker'"
     ALIAS_DOCKER_COMPOSE="alias dind-compose='sudo docker exec -it docker-in-docker docker-compose'"
-    ALIAS_DOCKER_SPACE_COMPOSE="alias dindcompose='sudo docker exec -it docker-in-docker docker compose'"  # Changed alias name
+    ALIAS_DOCKER_SPACE_COMPOSE="alias dindcompose='sudo docker exec -it docker-in-docker docker compose'"
 
     # Ensure ~/.bashrc exists before making modifications
     if [ ! -f ~/.bashrc ]; then
@@ -293,7 +293,7 @@ if sudo docker ps | grep -q "$SERVICE_NAME"; then
     # Remove previous conflicting aliases if they exist
     sed -i '/alias dind=/d' ~/.bashrc
     sed -i '/alias dind-compose=/d' ~/.bashrc
-    sed -i '/alias dindcompose=/d' ~/.bashrc  # Updated alias name
+    sed -i '/alias dindcompose=/d' ~/.bashrc
 
     # Add the new aliases if they don't already exist
     if ! grep -Fxq "$ALIAS_DOCKER" ~/.bashrc; then
