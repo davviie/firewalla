@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Ensure the script is being run by the 'pi' user
+if [ "$(whoami)" != "pi" ]; then
+    echo "❌ This script must be run as the 'pi' user. Please switch to the 'pi' user and try again."
+    exit 1
+fi
+
 # Define default values for environment variables
 DEFAULT_NEXTDNS_CONFIG="default_config_id"
 DEFAULT_PIHOLE_TZ="UTC"

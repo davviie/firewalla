@@ -2,16 +2,9 @@
 
 # Firewalla Docker-in-Docker Setup
 
-# This repository contains an automated setup script for configuring Docker-in-Docker on Firewalla. The script handles the following:
-# - Setting up Docker-in-Docker with dynamic storage driver selection (`overlay2` or `vfs`).
-# - Configuring secure or insecure Docker daemon binding based on available certificates.
-# - Building a default Dockerfile inside the Docker-in-Docker container.
-# - Saving error logs for debugging.
-
-# ---
-
 ## Prerequisites
-# Ensure your Firewalla device has Docker and Git installed before proceeding.
+- Ensure your Firewalla device has Docker and Git installed.
+- Ensure the `pi` user has the necessary permissions to run the scripts.
 
 # ---
 

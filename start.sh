@@ -6,17 +6,43 @@ CUSTOM_GROUP="firewalla"
 # Create the custom group if it doesn't exist
 if ! getent group "$CUSTOM_GROUP" >/dev/null; then
     echo "🔧 Creating custom group '$CUSTOM_GROUP'..."
-    sudo groupadd "$CUSTOM_GROUP"
+    groupadd "$CUSTOM_GROUP"
     echo "✅ Group '$CUSTOM_GROUP' created."
 else
     echo "ℹ️ Group '$CUSTOM_GROUP' already exists."
 fi
 
-# Add 'pi' and 'root' to the custom group
-echo "🔧 Adding 'pi' and 'root' to the '$CUSTOM_GROUP' group..."
-sudo usermod -aG "$CUSTOM_GROUP" pi
-sudo usermod -aG "$CUSTOM_GROUP" root
-echo "✅ 'pi' and 'root' added to the '$CUSTOM_GROUP' group."
+# Add 'pi' to the custom group
+echo "🔧 Adding 'pi' to the '$CUSTOM_GROUP' group..."
+usermod -aG "$CUSTOM_GROUP" pi
+echo "✅ 'pi' added to the '$CUSTOM_GROUP' group."
+
+# Define working directory
+DIR=~/firewalla
+
+# Create main directory if it doesn't exist
+if [ ! -d "$DIR" ]; then
+    echo "📁 Creating main directory $DIR..."
+    mkdir -p "$DIR"
+else
+    echo "📁 Main directory $DIR already exists."
+fi
+
+# Create subdirectory for Docker if it doesn't exist
+DOCKER_DIR="$DIR/docker"
+if [ ! -d "$DOCKER_DIR" ]; then
+    echo "📁 Creating Docker directory $DOCKER_DIR..."
+    mkdir -p "$DOCKER_DIR"
+else
+    echo "📁 Docker directory $DOCKER_DIR already exists."
+fi
+
+# Set group ownership and permissions for the entire directory and subdirectories
+echo "🔧 Setting group ownership and permissions for the entire directory and subdirectories..."
+chown -R pi:"$CUSTOM_GROUP" "$DIR"
+chmod -R 775 "$DIR"
+chmod -R g+s "$DIR"  # Set the group sticky bit
+echo "✅ Group ownership and permissions set for $DIR and its subdirectories."
 
 # Purge all Docker containers, images, volumes, and networks
 echo "🧹 Purging all Docker containers, images, volumes, and networks..."
@@ -72,39 +98,12 @@ DOCKER_IMAGE="docker:latest"  # Use the latest version dynamically
 echo "🔄 Pulling the latest Docker image..."
 sudo docker pull $DOCKER_IMAGE
 
-# Define working directory
-DIR=~/firewalla
-
 # Check for Docker
 echo "Checking if Docker is installed..."
 if ! command -v docker &>/dev/null; then
     echo "❌ Docker is not installed. Please install it first."
     exit 1
 fi
-
-# Create main directory if it doesn't exist
-if [ ! -d "$DIR" ]; then
-    echo "📁 Creating main directory $DIR..."
-    mkdir -p "$DIR"
-else
-    echo "📁 Main directory $DIR already exists."
-fi
-
-# Create subdirectory for Docker if it doesn't exist
-DOCKER_DIR="$DIR/docker"
-if [ ! -d "$DOCKER_DIR" ]; then
-    echo "📁 Creating Docker directory $DOCKER_DIR..."
-    mkdir -p "$DOCKER_DIR"
-else
-    echo "📁 Docker directory $DOCKER_DIR already exists."
-fi
-
-# Set group ownership and permissions for the entire directory and subdirectories
-echo "🔧 Setting group ownership and permissions for the entire directory and subdirectories..."
-sudo chown -R root:"$CUSTOM_GROUP" "$DIR"
-sudo chmod -R 775 "$DIR"
-sudo chmod -R g+s "$DIR"  # Set the group sticky bit
-echo "✅ Group ownership and permissions set for $DIR and its subdirectories."
 
 # Clone the GitHub repo using SSH
 if [ ! -d "$DIR/$REPO_NAME" ]; then
