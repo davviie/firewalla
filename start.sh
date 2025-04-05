@@ -15,20 +15,16 @@ if ! id -u pi >/dev/null 2>&1; then
     sudo usermod -aG sudo pi
     echo "✅ User 'pi' added to the 'sudo' group."
 
-    # Force group membership to take effect
-    echo "🔄 Refreshing group membership for 'pi'..."
-    newgrp sudo <<EOF
-    echo "✅ Group membership refreshed for 'pi'."
-EOF
-
     # Add 'pi' to the sudoers file
     echo "🔧 Adding 'pi' to the sudoers file..."
     echo "pi ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/pi >/dev/null
     sudo chmod 0440 /etc/sudoers.d/pi
     echo "✅ 'pi' added to the sudoers file with passwordless sudo access."
+else
+    echo "ℹ️ User 'pi' already exists."
 fi
 
-# Ensure the script is run as the 'pi' user
+# Check if the script is being run as the 'pi' user
 if [ "$(whoami)" != "pi" ]; then
     echo "❌ This script must be run as the 'pi' user."
     echo "ℹ️ Please switch to the 'pi' user by running: su - pi"
@@ -36,7 +32,9 @@ if [ "$(whoami)" != "pi" ]; then
 fi
 
 # Check if the 'pi' user has sudo privileges
-if ! sudo -v >/dev/null 2>&1; then
+if sudo -v >/dev/null 2>&1; then
+    echo "✅ The 'pi' user has sudo privileges."
+else
     echo "❌ The 'pi' user does not have sudo privileges."
     echo "ℹ️ Please ensure the 'pi' user has sudo access before running this script."
     exit 1
