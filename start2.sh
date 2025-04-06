@@ -134,6 +134,69 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Function to check Docker socket connectivity
+check_docker_socket() {
+    echo "🔍 Checking Docker socket connectivity..."
+    if sudo docker info >/dev/null 2>&1; then
+        echo "✅ Docker socket is accessible."
+        return 0
+    else
+        echo "❌ Docker socket is not accessible."
+        return 1
+    fi
+}
+
+# Function to restart Docker service
+restart_docker_service() {
+    echo "🔄 Attempting to restart Docker service..."
+    if sudo service docker restart >/dev/null 2>&1; then
+        echo "✅ Docker service restarted successfully."
+        return 0
+    else
+        echo "❌ Failed to restart Docker service. Please check your Docker installation."
+        return 1
+    fi
+}
+
+# Function to attempt TCP binding fallback
+fallback_to_tcp_binding() {
+    echo "⚠️ Falling back to TCP binding for Docker..."
+    DOCKER_COMMAND="dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=vfs --tls=false"
+    echo "🔄 Starting Docker daemon with TCP binding..."
+    if eval "$DOCKER_COMMAND" >/dev/null 2>&1 &; then
+        echo "✅ Docker daemon started with TCP binding."
+        return 0
+    else
+        echo "❌ Failed to start Docker daemon with TCP binding."
+        return 1
+    fi
+}
+
+# Main logic to ensure Docker socket connectivity
+echo "🔧 Ensuring Docker socket connectivity..."
+if ! check_docker_socket; then
+    echo "⚠️ Docker socket is not accessible. Attempting fallback methods..."
+
+    # Attempt to restart Docker service
+    if ! restart_docker_service; then
+        echo "⚠️ Docker service restart failed. Attempting TCP binding fallback..."
+
+        # Attempt TCP binding fallback
+        if ! fallback_to_tcp_binding; then
+            echo "❌ All fallback methods failed. Unable to connect to Docker socket."
+            exit 1
+        fi
+    fi
+
+    # Recheck Docker socket after fallback
+    if ! check_docker_socket; then
+        echo "❌ Docker socket is still not accessible after fallback methods."
+        exit 1
+    fi
+fi
+
+echo "✅ Docker socket connectivity ensured."
+
 # Set default GitHub username
 DEFAULT_GITHUB_USER="davviie"
 
