@@ -1,0 +1,9 @@
+  github-cli:
+    image: ghcr.io/cli/cli:latest
+    container_name: github-cli
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    volumes:
+      - ./github:/root/.config/gh  # Mount GitHub CLI configuration
+      - .:/repo               # Mount your repository directory
+    working_dir: /repo
