@@ -15,10 +15,10 @@ services:
       - ./certs:/certs  # Mount the certs directory
       - ./dind-post.sh:/post-install.sh  # Mount the post-install script
     ports:
-      - "2376:2376"  # Expose Docker's secure TCP port
+      - "2377:2376"  # Change the host port to 2377
     command: >
       sh -c "
-      TLS_CERT_DIR='/certs';
+      netstat -tuln | grep 2376      TLS_CERT_DIR='/certs';
       mkdir -p $TLS_CERT_DIR;
 
       # Fix permissions for mounted directories
