@@ -12,7 +12,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./docker/dind-data:/var/lib/docker  # Persistent Docker data
       - ./docker:/dind
-      - ./dind-post.sh:/post-install.sh  # Mount the post-install script
+      - ./docker/dind-post.sh:/post-install.sh  # Mount the post-install script
 
     ports:
       - "2375:2375"  # Expose Docker's TCP port for fallback
