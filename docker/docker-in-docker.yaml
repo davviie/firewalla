@@ -13,9 +13,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
-      - .:/dind  # Mount the current directory
-      - ./dind-post.sh:/post-install.sh  # Mount the post-install script
       - ./certs:/certs  # Mount the certs directory
+      - ./dind-post.sh:/post-install.sh  # Mount the post-install script
     ports:
       - "2376:2376"  # Expose Docker's secure TCP port
     command: >
@@ -33,7 +32,13 @@ services:
           echo '🔑 Generating self-signed TLS certificates...';
           openssl req -newkey rsa:4096 -nodes -keyout $TLS_CERT_DIR/server-key.pem -x509 -days 365 -out $TLS_CERT_DIR/server-cert.pem -subj '/CN=docker-in-docker';
           cp $TLS_CERT_DIR/server-cert.pem $TLS_CERT_DIR/ca.pem;
+      else
+          echo '🔑 TLS certificates already exist. Skipping generation.';
       fi;
+
+      # Debug: List certificates
+      echo '🔍 Debug: Listing certificates in $TLS_CERT_DIR...';
+      ls -l $TLS_CERT_DIR;
 
       # Start Docker daemon with fallback logic
       echo '🔒 Starting Docker daemon...';
