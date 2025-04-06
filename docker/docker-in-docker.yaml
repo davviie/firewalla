@@ -22,14 +22,25 @@ services:
       sh -c "
       TLS_CERT_DIR='/github_repo/certs';
       mkdir -p $TLS_CERT_DIR;
+
+      # Fix permissions for mounted directories
+      echo '🔧 Fixing permissions for mounted directories...';
+      chown -R 1000:1000 /var/lib/docker $TLS_CERT_DIR;
+      chmod -R 755 /var/lib/docker $TLS_CERT_DIR;
+
+      # Generate self-signed TLS certificates if missing
       if [ ! -f \"$TLS_CERT_DIR/ca.pem\" ] || [ ! -f \"$TLS_CERT_DIR/server-cert.pem\" ] || [ ! -f \"$TLS_CERT_DIR/server-key.pem\" ]; then
           echo '🔑 Generating self-signed TLS certificates...';
           openssl req -newkey rsa:4096 -nodes -keyout $TLS_CERT_DIR/server-key.pem -x509 -days 365 -out $TLS_CERT_DIR/server-cert.pem -subj '/CN=docker-in-docker';
           cp $TLS_CERT_DIR/server-cert.pem $TLS_CERT_DIR/ca.pem;
       fi;
-      echo '🔒 Starting Docker daemon with TLS...';
-      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=overlay2 --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem &
-      sleep 5 &&
+
+      # Start Docker daemon with fallback logic
+      echo '🔒 Starting Docker daemon...';
+      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=overlay2 --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem ||
+      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=vfs --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem;
+
+      sleep 5;
       sh /post-install.sh"
 volumes:
   dind-data:
