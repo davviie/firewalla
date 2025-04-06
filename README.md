@@ -149,6 +149,17 @@ docker exec -it docker-in-docker sh
 
 Once inside, you can run commands like `apk` to install additional packages or troubleshoot the container.
 
+### Remove the `apk` Lock File
+If you encounter the error `Unable to lock database: temporary error`, it may be caused by a stale lock file. To fix this, remove the lock file manually:
+```bash
+rm -f /var/lib/apk/lock
+```
+
+After removing the lock file, retry the `apk` command:
+```bash
+apk update && apk upgrade
+```
+
 ---
 
 ## License
