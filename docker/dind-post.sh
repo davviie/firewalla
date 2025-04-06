@@ -1,4 +1,6 @@
 #!/bin/sh
+#set timeout to 300 (5 minutes)
+export TMOUT=300
 
 # Ensure the script is running inside the docker-in-docker container
 if ! docker info >/dev/null 2>&1; then
@@ -8,13 +10,29 @@ if ! docker info >/dev/null 2>&1; then
     exit 1
 fi
 
+# Retry logic for apk commands
+retry_apk() {
+    local retries=5
+    local count=0
+    until apk "$@" || [ $count -ge $retries ]; do
+        count=$((count + 1))
+        echo "⚠️ apk command failed. Retrying ($count/$retries)..."
+        sleep 2
+    done
+
+    if [ $count -ge $retries ]; then
+        echo "❌ apk command failed after $retries attempts."
+        exit 1
+    fi
+}
+
 # Update Alpine packages
 echo "🔄 Updating Alpine packages..."
-apk update && apk upgrade
+retry_apk update && retry_apk upgrade
 
 # Install necessary Alpine packages
 echo "📦 Installing necessary packages..."
-apk add --no-cache \
+retry_apk add --no-cache \
     bash \
     curl \
     git \

@@ -14,12 +14,12 @@ Follow these steps to set up Docker-in-Docker on Firewalla:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/davviie/firewalla.git ~/firewalla
+git clone https://github.com/davviie/firewalla.git ~/repo
 ```
 
 ### 2. Navigate to the Repository Directory
 ```bash
-cd ~/firewalla
+cd ~/repo
 ```
 
 ### 3. Make the Setup Script Executable
@@ -31,7 +31,7 @@ chmod +x start.sh
 The `start.sh` script will:
 - Create the `firewalla` group (if it doesn’t already exist).
 - Add the `pi` user to the `firewalla` group.
-- Set up permissions and ownership for the `~/firewalla` directory.
+- Set up permissions and ownership for the `~/repo` directory.
 - Pull the necessary Docker images and set up Docker-in-Docker.
 
 Run the script:
@@ -41,7 +41,7 @@ Run the script:
 
 ### 5. Navigate to the Docker Directory
 ```bash
-cd ~/firewalla/docker
+cd ~/repo/docker
 ```
 
 ### 6. Run the `dind.sh` Script as the `pi` User
@@ -57,29 +57,63 @@ Run the script:
 
 ---
 
+## Installing Necessary Packages
+If you need to install additional packages inside the `docker-in-docker` container, you can use the following commands:
+
+### Update Alpine Packages
+```bash
+apk update && apk upgrade
+```
+
+### Install Commonly Used Packages
+```bash
+apk add --no-cache \
+    bash \
+    curl \
+    git \
+    openssh \
+    docker-cli \
+    docker-compose \
+    build-base \
+    python3 \
+    py3-pip \
+    jq \
+    vim
+```
+
+### Upgrade Docker and Docker Compose
+If you need to upgrade Docker and Docker Compose, you can use the following commands:
+```bash
+python3 -m ensurepip --upgrade
+pip3 install --upgrade pip
+pip3 install --upgrade docker-compose
+```
+
+---
+
 ## Features
 - **Dynamic Storage Driver Selection**:
   Automatically uses `overlay2` if supported; falls back to `vfs` otherwise.
 - **Secure/Insecure Binding**:
   Enables `--tlsverify` if certificates are available; otherwise, falls back to insecure binding.
 - **Group-Based Permissions**:
-  Ensures both `pi` and `root` users have access to the `~/firewalla` directory and its subdirectories.
+  Ensures both `pi` and `root` users have access to the `~/repo` directory and its subdirectories.
 
 ---
 
 ## Troubleshooting
 
 ### Permission Issues
-If you encounter permission issues, ensure the `pi` user owns the `~/firewalla` directory:
+If you encounter permission issues, ensure the `pi` user owns the `~/repo` directory:
 ```bash
-sudo chown -R pi:firewalla ~/firewalla
-sudo chmod -R 775 ~/firewalla
+sudo chown -R pi:firewalla ~/repo
+sudo chmod -R 775 ~/repo
 ```
 
 ### Missing `firewalla_dind.yml`
-If the `firewalla_dind.yml` file is not found, ensure it exists in the `~/firewalla/docker` directory:
+If the `firewalla_dind.yml` file is not found, ensure it exists in the `~/repo/docker` directory:
 ```bash
-ls ~/firewalla/docker/firewalla_dind.yml
+ls ~/repo/docker/firewalla_dind.yml
 ```
 
 ### Check Logs
