@@ -357,6 +357,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - $DOCKER_DATA_DIR:/var/lib/docker           # Constrain Docker data
       - $DOCKER_DIR:/docker                        # Bind-mount the Docker directory
+    ports:
+      - "2375:2375"  # Expose Docker's TCP port for fallback
     command: >
       dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
 networks:

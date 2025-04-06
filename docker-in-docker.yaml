@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  docker-in-docker:
+    image: docker:latest
+    container_name: docker-in-docker
+    privileged: true  # Required for Docker-in-Docker
+    restart: unless-stopped
+    environment:
+      - DOCKER_TLS_CERTDIR=  # Disable TLS for simplicity
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
+      - dind-data:/var/lib/docker  # Persistent Docker data
+    ports:
+      - "2375:2375"  # Expose Docker's TCP port for fallback
+    command: >
+      dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2
+
+volumes:
+  dind-data:
