@@ -9,20 +9,26 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - DOCKER_TLS_CERTDIR=  # Disable TLS for simplicity
+      - DOCKER_TLS_CERTDIR=/etc/docker/certs.d  # Enable TLS
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
       - .:/github_repo  # Mount the current directory
       - ./dind-post.sh:/post-install.sh  # Mount the post-install script
     ports:
-      - "2375:2375"  # Expose Docker's TCP port for fallback
+      - "2376:2376"  # Expose Docker's secure TCP port
     command: >
-      sh -c "chown -R 1000:1000 /var/lib/docker &&
-      chmod -R 755 /var/lib/docker &&
-      dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2 &
+      sh -c "
+      TLS_CERT_DIR='/etc/docker/certs.d';
+      mkdir -p $TLS_CERT_DIR;
+      if [ ! -f \"$TLS_CERT_DIR/ca.pem\" ] || [ ! -f \"$TLS_CERT_DIR/server-cert.pem\" ] || [ ! -f \"$TLS_CERT_DIR/server-key.pem\" ]; then
+          echo '🔑 Generating self-signed TLS certificates...';
+          openssl req -newkey rsa:4096 -nodes -keyout $TLS_CERT_DIR/server-key.pem -x509 -days 365 -out $TLS_CERT_DIR/server-cert.pem -subj '/CN=docker-in-docker';
+          cp $TLS_CERT_DIR/server-cert.pem $TLS_CERT_DIR/ca.pem;
+      fi;
+      echo '🔒 Starting Docker daemon with TLS...';
+      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=overlay2 --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem &
       sleep 5 &&
       sh /post-install.sh"
-
 volumes:
   dind-data:
