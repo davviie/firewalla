@@ -6,6 +6,8 @@ services:
     container_name: docker-in-docker
     privileged: true  # Required for Docker-in-Docker
     restart: unless-stopped
+    tty: true
+    stdin_open: true
     environment:
       - DOCKER_TLS_CERTDIR=  # Disable TLS for simplicity
     volumes:
