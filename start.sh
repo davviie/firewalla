@@ -108,9 +108,12 @@ services:
     privileged: true
     environment:
       - DOCKER_TLS_CERTDIR=
+      - DOCKER_HOST=tcp://0.0.0.0:2375
+    command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock", "--debug"]
     volumes:
       - docker-data:/var/lib/docker
       - /var/run/docker.sock:/var/run/docker.sock
+      - $DOCKER_DIR:/docker  # Bind-mount the Docker directory to /docker inside the container
     ports:
       - "2375:2375"
     networks:
@@ -126,8 +129,9 @@ volumes:
   docker-data:
     driver: local
     driver_opts:
+      type: bind
       o: bind
-      device: /path/to/persistent/storage
+      device: ./docker/docker-data
 
 networks:
   dind-network:
@@ -138,13 +142,13 @@ echo "✅ Docker Compose file created at $COMPOSE_FILE"
 
 # Pull image and run
 echo "🔧 Pulling Docker images..."
-if ! sudo docker-compose pull; then
+if ! sudo docker-compose -f "$COMPOSE_FILE" pull; then
     echo "❌ Failed to pull Docker images."
     exit 1
 fi
 
 echo "🔧 Starting Docker Compose services..."
-if ! sudo docker-compose up -d; then
+if ! sudo docker-compose -f "$COMPOSE_FILE" up -d; then
     echo "❌ Failed to start Docker Compose services."
     exit 1
 fi
