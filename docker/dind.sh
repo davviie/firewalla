@@ -45,6 +45,24 @@ ENV_FILE=./.env
 }
 echo "✅ Environment variables written to $ENV_FILE"
 
+# Ensure the docker-in-docker container is running with the correct bind mount
+DIND_CONTAINER="docker-in-docker"
+if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep -q "^$DIND_CONTAINER$"; then
+    echo "🔧 Starting the docker-in-docker container with the current directory mounted..."
+    sudo docker run -d --rm \
+        --name "$DIND_CONTAINER" \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "$(pwd):$(pwd)" \
+        -w "$(pwd)" \
+        docker:dind || {
+        echo "❌ Failed to start the docker-in-docker container."
+        exit 1
+    }
+    echo "✅ docker-in-docker container started successfully."
+else
+    echo "✅ docker-in-docker container is already running."
+fi
+
 # Authenticate with GitHub Container Registry
 echo "🔑 Authenticating with GitHub Container Registry (ghcr.io)..."
 if ! docker login ghcr.io >/dev/null 2>&1; then
@@ -110,14 +128,14 @@ fi
 
 # Validate the Docker Compose file
 echo "🔍 Validating firewalla_dind.yml..."
-docker-compose -H unix:///var/run/docker.sock -f firewalla_dind.yml config || {
+sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml config || {
     echo "❌ firewalla_dind.yml is invalid."
     exit 1
 }
 
 # Start the services using Docker Compose
 echo "📦 Launching services defined in firewalla_dind.yml..."
-docker-compose -H unix:///var/run/docker.sock -f firewalla_dind.yml up -d || {
+sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml up -d || {
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }

@@ -1,0 +1,44 @@
+#Ignore directories
+pihole_config/
+dnsmasq_config/
+
+# Ignore environment files
+.env
+
+# Ignore logs
+*.log
+logs/
+*.out
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.bak
+*.pid
+
+# Ignore Docker-related files
+docker-compose.override.yml
+docker-compose.override.yaml
+.docker/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore Python cache (if applicable)
+__pycache__/
+*.py[cod]
+
+# Ignore node_modules (if using Node.js)
+node_modules/
+
+# Ignore VS Code settings
+.vscode/
+
+# Ignore compiled binaries
+*.o
+*.so
+*.exe
+
+# Ignore backup files
+*~
