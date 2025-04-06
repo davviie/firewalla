@@ -148,6 +148,8 @@ sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from ne
 ```
 ### Getting the TLS Certificates
 ```bash
+sudo chown -R pi:pi ~/repo/docker/certs
+sudo chmod -R 755 ~/repo/docker/certs
 mkdir -p ~/repo/docker/certs
 openssl req -newkey rsa:4096 -nodes -keyout ~/repo/docker/certs/server-key.pem -x509 -days 365 -out ~/repo/docker/certs/server-cert.pem -subj "/CN=docker-in-docker"
 cp ~/repo/docker/certs/server-cert.pem ~/repo/docker/certs/ca.pem
