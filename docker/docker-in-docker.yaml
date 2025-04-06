@@ -9,7 +9,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - DOCKER_TLS_CERTDIR=/github_repo/certs  # Set TLS_CERT_DIR to a subdirectory
+      - DOCKER_TLS_CERTDIR=/certs  # Set TLS_CERT_DIR to a subdirectory
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
@@ -20,7 +20,7 @@ services:
       - "2376:2376"  # Expose Docker's secure TCP port
     command: >
       sh -c "
-      TLS_CERT_DIR='/github_repo/certs';
+      TLS_CERT_DIR='/certs';
       mkdir -p $TLS_CERT_DIR;
 
       # Fix permissions for mounted directories
