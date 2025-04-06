@@ -163,7 +163,7 @@ fallback_to_tcp_binding() {
     echo "⚠️ Falling back to TCP binding for Docker..."
     DOCKER_COMMAND="dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=vfs --tls=false"
     echo "🔄 Starting Docker daemon with TCP binding..."
-    if eval "$DOCKER_COMMAND" >/dev/null 2>&1 &; then
+    if eval "$DOCKER_COMMAND" >/dev/null 2>&1 & then
         echo "✅ Docker daemon started with TCP binding."
         return 0
     else
