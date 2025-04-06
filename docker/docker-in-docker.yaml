@@ -13,7 +13,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
-      - .:/  # Mount the current directory
+      - .:/dind  # Mount the current directory
       - ./dind-post.sh:/post-install.sh  # Mount the post-install script
       - ./certs:/certs  # Mount the certs directory
     ports:
