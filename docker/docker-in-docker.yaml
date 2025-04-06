@@ -18,7 +18,9 @@ services:
     ports:
       - "2375:2375"  # Expose Docker's TCP port for fallback
     command: >
-      sh -c "dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2 &
+      sh -c "chown -R 1000:1000 /var/lib/docker &&
+      chmod -R 755 /var/lib/docker &&
+      dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=overlay2 &
       sleep 5 &&
       sh /post-install.sh"
 
