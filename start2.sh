@@ -176,11 +176,14 @@ fallback_to_tcp_binding() {
 stop_conflicting_docker_daemon() {
     echo "🔍 Checking for conflicting Docker daemon on the host..."
     if sudo lsof /var/run/docker.sock >/dev/null 2>&1; then
-        echo "⚠️ Host Docker daemon is using /var/run/docker.sock. Stopping it..."
+        echo "⚠️ Host Docker daemon is using /var/run/docker.sock. Attempting to stop it..."
         if sudo service docker stop >/dev/null 2>&1; then
             echo "✅ Host Docker daemon stopped successfully."
         else
-            echo "❌ Failed to stop the host Docker daemon. Please stop it manually."
+            echo "❌ Failed to stop the host Docker daemon. Please stop it manually using:"
+            echo "   sudo systemctl stop docker"
+            echo "   or"
+            echo "   sudo service docker stop"
             exit 1
         fi
     else
@@ -351,30 +354,11 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=
     volumes:
-      - $DOCKER_DATA_DIR:/var/lib/docker  # Constrain Docker data to ~/firewalla/docker/docker-data
-      - $SYMLINK_SOCKET:/var/run/docker.sock  # Use the symlinked Docker socket
-      - $DOCKER_DIR:/docker  # Bind-mount the Docker directory to /docker inside the container
+      - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
+      - $DOCKER_DATA_DIR:/var/lib/docker           # Constrain Docker data
+      - $DOCKER_DIR:/docker                        # Bind-mount the Docker directory
     command: >
-      sh -c "
-      if [ -f /etc/alpine-release ]; then
-        echo 'Detected Alpine Linux. Using apk for package installation...' &&
-        apk add --no-cache curl ca-certificates docker-cli docker-compose;
-      elif [ -f /etc/os-release ] && grep -qi 'ubuntu\|debian' /etc/os-release; then
-        echo 'Detected Ubuntu/Debian. Using apt-get for package installation...' &&
-        apt-get update &&
-        apt-get install -y apt-transport-https ca-certificates curl gnupg &&
-        mkdir -p /etc/apt/keyrings &&
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc &&
-        chmod a+r /etc/apt/keyrings/docker.asc &&
-        echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu stable' > /etc/apt/sources.list.d/docker.list &&
-        apt-get update &&
-        apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin;
-      else
-        echo 'Unsupported OS. Exiting...' &&
-        exit 1;
-      fi &&
       dockerd --debug --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock --storage-driver=$STORAGE_DRIVER --tls=false
-      "
 networks:
   dind-network:
     driver: bridge
