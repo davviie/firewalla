@@ -13,9 +13,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
-      - ./:/dind
+      - .:/github_repo  # Mount the current directory
       - ./dind-post.sh:/post-install.sh  # Mount the post-install script
-
     ports:
       - "2375:2375"  # Expose Docker's TCP port for fallback
     command: >

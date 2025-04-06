@@ -134,6 +134,11 @@ To check only error logs:
 ```bash
 docker logs docker-in-docker 2>&1 | grep -i "error"
 ```
+## Refresh the repo
+
+sudo rm -rf ~/repo
+docker-compose -f docker-in-docker.yaml up -d
+git clone https://github.com/davviie/firewalla.git ~/repo
 
 ### Nested Docker Test
 To test if nested Docker is working correctly:
