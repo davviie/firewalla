@@ -1,0 +1,20 @@
+version: '3.3'
+
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"       # DNS TCP
+      - "53:53/udp"       # DNS UDP
+      - "90:80"           # Web interface
+    environment:
+      TZ: "America/Montreal"  # Set your timezone
+      WEBPASSWORD: "p0tat0"  # Set a password for the web interface
+    volumes:
+      - ./pihole/etc-pihole:/etc/pihole
+      - ./pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
