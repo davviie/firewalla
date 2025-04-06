@@ -9,7 +9,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - DOCKER_TLS_CERTDIR=/etc/docker/certs.d  # Enable TLS
+      - DOCKER_TLS_CERTDIR=/etc/docker/certs.d  # Explicitly set TLS_CERT_DIR
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
