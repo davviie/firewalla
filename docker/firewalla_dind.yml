@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   pihole:
-    image: pihole/pihole:latest
+    image: pihole/pihole:latest  # Use the latest compatible version
     container_name: pihole
     restart: unless-stopped
     ports:
