@@ -60,9 +60,9 @@ if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep
     sudo docker run -d --rm \
         --name "$DIND_CONTAINER" \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "$(pwd):$(pwd)" \  # Bind-mount the current directory
-        -w "$(pwd)" \          # Set the working directory inside the container
-        --group-add $(getent group docker | cut -d: -f3) \
+        -v "$(pwd):$(pwd)" \
+        -w "$(pwd)" \
+        --user "$(id -u):$(id -g)" \
         docker:dind || {
         echo "❌ Failed to start the docker-in-docker container."
         exit 1
@@ -71,6 +71,14 @@ if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep
 else
     echo "✅ docker-in-docker container is already running."
 fi
+
+# Verify file accessibility inside the container
+echo "🔍 Verifying file accessibility inside the docker-in-docker container..."
+if ! sudo docker exec -it "$DIND_CONTAINER" ls "$(pwd)" | grep -q "firewalla_dind.yml"; then
+    echo "❌ firewalla_dind.yml is not accessible inside the docker-in-docker container."
+    exit 1
+fi
+echo "✅ firewalla_dind.yml is accessible inside the docker-in-docker container."
 
 # Authenticate with GitHub Container Registry
 echo "🔑 Authenticating with GitHub Container Registry (ghcr.io)..."
@@ -148,7 +156,5 @@ sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml up -
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
-
-export BROWSER=xdg-open
 
 echo "🎉 Services are up and running!"
