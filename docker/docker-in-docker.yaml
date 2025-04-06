@@ -9,7 +9,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - DOCKER_TLS_CERTDIR=/etc/docker/certs.d  # Explicitly set TLS_CERT_DIR
+      - DOCKER_TLS_CERTDIR=/github_repo/certs  # Set TLS_CERT_DIR to a subdirectory
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
@@ -19,7 +19,7 @@ services:
       - "2376:2376"  # Expose Docker's secure TCP port
     command: >
       sh -c "
-      TLS_CERT_DIR='/etc/docker/certs.d';
+      TLS_CERT_DIR='/github_repo/certs';
       mkdir -p $TLS_CERT_DIR;
       if [ ! -f \"$TLS_CERT_DIR/ca.pem\" ] || [ ! -f \"$TLS_CERT_DIR/server-cert.pem\" ] || [ ! -f \"$TLS_CERT_DIR/server-key.pem\" ]; then
           echo '🔑 Generating self-signed TLS certificates...';
