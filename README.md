@@ -146,9 +146,15 @@ To test if nested Docker is working correctly:
 ```bash
 sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from nested Docker!"
 ```
-
+### Getting the TLS Certificates
+```bash
+mkdir -p ~/repo/docker/certs
+openssl req -newkey rsa:4096 -nodes -keyout ~/repo/docker/certs/server-key.pem -x509 -days 365 -out ~/repo/docker/certs/server-cert.pem -subj "/CN=docker-in-docker"
+cp ~/repo/docker/certs/server-cert.pem ~/repo/docker/certs/ca.pem
 ### Access the Alpine Shell of Docker-in-Docker
 If you need to manually access the Alpine shell of the `docker-in-docker` container, use:
+```
+
 ```bash
 docker exec -it docker-in-docker sh
 ```
