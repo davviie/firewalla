@@ -11,7 +11,6 @@ services:
     environment:
       - DOCKER_TLS_CERTDIR=/certs  # Set TLS_CERT_DIR to a subdirectory
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
       - ./dind-data:/var/lib/docker  # Persistent Docker data
       - ./certs:/certs  # Mount the certs directory
       - ./dind-post.sh:/post-install.sh  # Mount the post-install script
@@ -40,10 +39,9 @@ services:
       echo '🔍 Debug: Listing certificates in $TLS_CERT_DIR...';
       ls -l $TLS_CERT_DIR;
 
-      # Start Docker daemon with fallback logic
+      # Start Docker daemon with a custom Unix socket
       echo '🔒 Starting Docker daemon...';
-      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=overlay2 --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem ||
-      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker.sock --storage-driver=vfs --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem;
+      dockerd --debug --host=tcp://0.0.0.0:2376 --host=unix:///var/run/docker-dind.sock --storage-driver=overlay2 --tlsverify --tlscacert=$TLS_CERT_DIR/ca.pem --tlscert=$TLS_CERT_DIR/server-cert.pem --tlskey=$TLS_CERT_DIR/server-key.pem;
 
       sleep 5;
       sh /post-install.sh"
