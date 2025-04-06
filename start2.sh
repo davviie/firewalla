@@ -172,6 +172,25 @@ fallback_to_tcp_binding() {
     fi
 }
 
+# Function to check and stop conflicting Docker daemon
+stop_conflicting_docker_daemon() {
+    echo "🔍 Checking for conflicting Docker daemon on the host..."
+    if sudo lsof /var/run/docker.sock >/dev/null 2>&1; then
+        echo "⚠️ Host Docker daemon is using /var/run/docker.sock. Stopping it..."
+        if sudo service docker stop >/dev/null 2>&1; then
+            echo "✅ Host Docker daemon stopped successfully."
+        else
+            echo "❌ Failed to stop the host Docker daemon. Please stop it manually."
+            exit 1
+        fi
+    else
+        echo "✅ No conflicting Docker daemon found on the host."
+    fi
+}
+
+# Ensure no conflicting Docker daemon is running
+stop_conflicting_docker_daemon
+
 # Main logic to ensure Docker socket connectivity
 echo "🔧 Ensuring Docker socket connectivity..."
 if ! check_docker_socket; then
@@ -306,6 +325,18 @@ else
     echo "✅ 'overlay2' storage driver is supported."
 fi
 
+# Define the symlink path for the Docker socket
+SYMLINK_SOCKET="$DOCKER_DIR/docker.sock"
+
+# Create a symlink to the Docker socket
+echo "🔗 Creating a symlink to the Docker socket at $SYMLINK_SOCKET..."
+if [ -L "$SYMLINK_SOCKET" ] || [ -e "$SYMLINK_SOCKET" ]; then
+    echo "ℹ️ Symlink or file already exists at $SYMLINK_SOCKET. Removing it..."
+    sudo rm -f "$SYMLINK_SOCKET"
+fi
+sudo ln -s /var/run/docker.sock "$SYMLINK_SOCKET"
+echo "✅ Symlink created: $SYMLINK_SOCKET -> /var/run/docker.sock"
+
 # Create Compose file for docker-in-docker
 COMPOSE_FILE="$DOCKER_DIR/$SERVICE_NAME.yml"
 echo "📝 Creating $SERVICE_NAME.yml for docker-in-docker..."
@@ -321,7 +352,7 @@ services:
       - DOCKER_TLS_CERTDIR=
     volumes:
       - $DOCKER_DATA_DIR:/var/lib/docker  # Constrain Docker data to ~/firewalla/docker/docker-data
-      - /var/run/docker.sock:/var/run/docker.sock  # Share Docker socket with the host
+      - $SYMLINK_SOCKET:/var/run/docker.sock  # Use the symlinked Docker socket
       - $DOCKER_DIR:/docker  # Bind-mount the Docker directory to /docker inside the container
     command: >
       sh -c "
