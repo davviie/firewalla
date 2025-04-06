@@ -64,7 +64,7 @@ if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep
         --name "$DIND_CONTAINER" \
         -v "$SCRIPT_DIR:$SCRIPT_DIR" \  # Mount the script directory into the container
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -w "$SCRIPT_DIR" \              # Set the working directory inside the container to the script directory
+        -w "/workspace" \              # Set the working directory inside the container to /workspace
         --user "$(id -u):$(id -g)" \
         docker:dind || {
         echo "❌ Failed to start the docker-in-docker container."
@@ -148,14 +148,14 @@ fi
 
 # Validate the Docker Compose file
 echo "🔍 Validating firewalla_dind.yml..."
-sudo docker exec -it "$DIND_CONTAINER" docker compose -f "$SCRIPT_DIR/firewalla_dind.yml" config || {
+sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml config || {
     echo "❌ firewalla_dind.yml is invalid."
     exit 1
 }
 
 # Start the services using Docker Compose
 echo "📦 Launching services defined in firewalla_dind.yml..."
-sudo docker exec -it "$DIND_CONTAINER" docker compose -f "$SCRIPT_DIR/firewalla_dind.yml" up -d || {
+sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml up -d || {
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
