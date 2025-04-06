@@ -52,8 +52,8 @@ if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep
     sudo docker run -d --rm \
         --name "$DIND_CONTAINER" \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "$(pwd):$(pwd)" \
-        -w "$(pwd)" \
+        -v "$(pwd):$(pwd)" \  # Bind-mount the current directory
+        -w "$(pwd)" \          # Set the working directory inside the container
         docker:dind || {
         echo "❌ Failed to start the docker-in-docker container."
         exit 1
