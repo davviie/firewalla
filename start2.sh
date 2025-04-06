@@ -63,7 +63,7 @@ sudo usermod -aG "$CUSTOM_GROUP" pi
 echo "✅ 'pi' added to the '$CUSTOM_GROUP' group."
 
 # Define working directory
-DIR=~/firewalla
+DIR="$(cd "$(dirname "$0")" && pwd)"
 DOCKER_DIR="$DIR/docker"
 DOCKER_DATA_DIR="$DOCKER_DIR/docker-data"
 
