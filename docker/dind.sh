@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Ensure the script is being run by the 'pi' user
 if [ "$(whoami)" != "pi" ]; then
     echo "❌ This script must be run as the 'pi' user. Please switch to the 'pi' user and try again."
@@ -35,13 +38,13 @@ read -p "Enter Portainer Port (default: $DEFAULT_PORTAINER_PORT): " PORTAINER_PO
 PORTAINER_PORT="${PORTAINER_PORT:-$DEFAULT_PORTAINER_PORT}"
 
 # Check if the current directory is writable
-if [ ! -w ./ ]; then
-    echo "❌ Current directory is not writable. Please check permissions."
+if [ ! -w "$SCRIPT_DIR" ]; then
+    echo "❌ The script directory ($SCRIPT_DIR) is not writable. Please check permissions."
     exit 1
 fi
 
 # Create or overwrite the .env file with the environment variables
-ENV_FILE=./.env
+ENV_FILE="$SCRIPT_DIR/.env"
 {
     echo "NEXTDNS_CONFIG=\"$NEXTDNS_CONFIG\""
     echo "PIHOLE_TZ=\"$PIHOLE_TZ\""
@@ -56,12 +59,12 @@ echo "✅ Environment variables written to $ENV_FILE"
 # Ensure the docker-in-docker container is running with the correct bind mount
 DIND_CONTAINER="docker-in-docker"
 if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep -q "^$DIND_CONTAINER$"; then
-    echo "🔧 Starting the docker-in-docker container with the current directory mounted..."
+    echo "🔧 Starting the docker-in-docker container with the script directory mounted..."
     sudo docker run -d --rm \
         --name "$DIND_CONTAINER" \
+        -v "$SCRIPT_DIR:$SCRIPT_DIR" \  # Mount the script directory into the container
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v "$(pwd):$(pwd)" \
-        -w "$(pwd)" \
+        -w "$SCRIPT_DIR" \              # Set the working directory inside the container to the script directory
         --user "$(id -u):$(id -g)" \
         docker:dind || {
         echo "❌ Failed to start the docker-in-docker container."
@@ -74,7 +77,7 @@ fi
 
 # Verify file accessibility inside the container
 echo "🔍 Verifying file accessibility inside the docker-in-docker container..."
-if ! sudo docker exec -it "$DIND_CONTAINER" ls "$(pwd)" | grep -q "firewalla_dind.yml"; then
+if ! sudo docker exec -it "$DIND_CONTAINER" ls "$SCRIPT_DIR" | grep -q "firewalla_dind.yml"; then
     echo "❌ firewalla_dind.yml is not accessible inside the docker-in-docker container."
     exit 1
 fi
@@ -145,14 +148,14 @@ fi
 
 # Validate the Docker Compose file
 echo "🔍 Validating firewalla_dind.yml..."
-sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml config || {
+sudo docker exec -it "$DIND_CONTAINER" docker compose -f "$SCRIPT_DIR/firewalla_dind.yml" config || {
     echo "❌ firewalla_dind.yml is invalid."
     exit 1
 }
 
 # Start the services using Docker Compose
 echo "📦 Launching services defined in firewalla_dind.yml..."
-sudo docker exec -it "$DIND_CONTAINER" docker compose -f firewalla_dind.yml up -d || {
+sudo docker exec -it "$DIND_CONTAINER" docker compose -f "$SCRIPT_DIR/firewalla_dind.yml" up -d || {
     echo "❌ Failed to start services in firewalla_dind.yml."
     exit 1
 }
