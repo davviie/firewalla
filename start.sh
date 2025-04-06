@@ -70,7 +70,8 @@ sudo usermod -aG "$CUSTOM_GROUP" pi
 # Create working directory
 DIR=~/firewalla
 DOCKER_DIR="$DIR/docker"
-mkdir -p "$DOCKER_DIR"
+DOCKER_DATA_DIR="$DOCKER_DIR/docker-data"
+mkdir -p "$DOCKER_DATA_DIR"
 if [ "$(stat -c '%U:%G' "$DIR")" != "pi:$CUSTOM_GROUP" ]; then
     sudo chown -R pi:"$CUSTOM_GROUP" "$DIR"
 fi
@@ -111,8 +112,8 @@ services:
       - DOCKER_HOST=tcp://0.0.0.0:2375
     command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock", "--debug"]
     volumes:
-      - docker-data:/var/lib/docker
-      - /var/run/docker.sock:/var/run/docker.sock
+      - $DOCKER_DATA_DIR:/var/lib/docker  # Constrain Docker data to ~/firewalla/docker/docker-data
+      - /var/run/docker.sock:/var/run/docker.sock  # Share Docker socket with the host
       - $DOCKER_DIR:/docker  # Bind-mount the Docker directory to /docker inside the container
     ports:
       - "2375:2375"
@@ -124,14 +125,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-volumes:
-  docker-data:
-    driver: local
-    driver_opts:
-      type: bind
-      o: bind
-      device: ./docker/docker-data
 
 networks:
   dind-network:
