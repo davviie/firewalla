@@ -10,7 +10,7 @@ services:
       - DOCKER_TLS_CERTDIR=  # Disable TLS for simplicity
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Bind the host Docker socket
-      - dind-data:/var/lib/docker  # Persistent Docker data
+      - ~/firewalla/docker/dind-data:/var/lib/docker  # Persistent Docker data
     ports:
       - "2375:2375"  # Expose Docker's TCP port for fallback
     command: >
