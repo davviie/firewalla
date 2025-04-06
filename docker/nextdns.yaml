@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  nextdns:
+    image: nextdns/nextdns:latest
+    container_name: nextdns
+    restart: unless-stopped
+    network_mode: "host"  # Use host networking for DNS
+    environment:
+      - NEXTDNS_CONFIG=your-config-id  # Replace with your NextDNS configuration ID
+      - LISTEN=127.0.0.1:53           # Listen on localhost port 53
+      - REPORT_CLIENT_INFO=true       # Enable client info reporting
+    command: >
+      run
+      --report-client-info
+      --log-queries
+      --cache-size=10MB
