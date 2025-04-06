@@ -55,6 +55,14 @@ Run the script:
 ./dind.sh
 ```
 
+### 7. Access the Alpine Shell of Docker-in-Docker
+To access the Alpine shell of the `docker-in-docker` container, use the following command:
+```bash
+docker exec -it docker-in-docker sh
+```
+
+Once inside the shell, you can run commands like `apk` to install packages or perform other operations.
+
 ---
 
 ## Installing Necessary Packages
@@ -132,6 +140,14 @@ To test if nested Docker is working correctly:
 ```bash
 sudo docker exec -it docker-in-docker docker run --rm alpine echo "Hello from nested Docker!"
 ```
+
+### Access the Alpine Shell of Docker-in-Docker
+If you need to manually access the Alpine shell of the `docker-in-docker` container, use:
+```bash
+docker exec -it docker-in-docker sh
+```
+
+Once inside, you can run commands like `apk` to install additional packages or troubleshoot the container.
 
 ---
 
