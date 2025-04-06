@@ -6,6 +6,14 @@ if [ "$(whoami)" != "pi" ]; then
     exit 1
 fi
 
+# Ensure the 'pi' user is part of the 'docker' group
+if ! groups pi | grep -q "\bdocker\b"; then
+    echo "🔧 Adding 'pi' to the 'docker' group..."
+    sudo usermod -aG docker pi
+    echo "✅ User 'pi' added to the 'docker' group. Please log out and log back in for the changes to take effect."
+    exit 1
+fi
+
 # Define default values for environment variables
 DEFAULT_NEXTDNS_CONFIG="dfa3a4"
 DEFAULT_PIHOLE_TZ="America/Toronto"
@@ -54,6 +62,7 @@ if ! sudo docker ps --filter "name=$DIND_CONTAINER" --format "{{.Names}}" | grep
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "$(pwd):$(pwd)" \  # Bind-mount the current directory
         -w "$(pwd)" \          # Set the working directory inside the container
+        --group-add $(getent group docker | cut -d: -f3) \
         docker:dind || {
         echo "❌ Failed to start the docker-in-docker container."
         exit 1
