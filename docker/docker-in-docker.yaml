@@ -15,6 +15,7 @@ services:
       - ./dind-data:/var/lib/docker  # Persistent Docker data
       - .:/github_repo  # Mount the current directory
       - ./dind-post.sh:/post-install.sh  # Mount the post-install script
+      - ./certs:/github_repo/certs  # Mount the certs directory
     ports:
       - "2376:2376"  # Expose Docker's secure TCP port
     command: >
