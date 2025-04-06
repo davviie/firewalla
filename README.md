@@ -137,9 +137,9 @@ docker logs docker-in-docker 2>&1 | grep -i "error"
 ## Refresh the repo
 ```bash
 sudo rm -rf ~/repo
-docker-compose -f docker-in-docker.yaml up -d
 git clone https://github.com/davviie/firewalla.git ~/repo
 ```
+docker-compose -f ~/repo/docker/docker-in-docker.yaml up -d
 
 ### Nested Docker Test
 To test if nested Docker is working correctly:
