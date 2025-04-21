@@ -175,8 +175,13 @@ After removing the lock file, retry the `apk` command:
 ```bash
 apk update && apk upgrade
 ```
-
+## Installing NextDNS with wiki here:
+https://github.com/nextdns/nextdns/wiki
 ---
+## Run Pihole on firewalla
+https://help.firewalla.com/hc/en-us/articles/360034635473-Tutorial-Running-Pi-Hole-on-Firewalla-Blue-Series-Boxes-in-5-mins-Retired
+# get sudo permissions first with command
+sudo -i
 
 ## License
 This repository is licensed under the MIT License. Feel free to modify and use it as needed.
