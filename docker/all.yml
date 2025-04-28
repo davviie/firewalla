@@ -22,10 +22,9 @@ services:
       - NET_ADMIN
     healthcheck:
       test: ["CMD", "dig", "@127.0.0.1", "google.com"]
-      interval: 1m30s
+      interval: 90s
       timeout: 10s
       retries: 3
-      start_period: 40s
 
   uptime-kuma:
     image: louislam/uptime-kuma:latest
@@ -47,10 +46,9 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "dig", "@127.0.0.1", "google.com", "-p", "5300"]
-      interval: 1m30s
+      interval: 90s
       timeout: 10s
       retries: 3
-      start_period: 40s
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -69,5 +67,5 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=86400  # Check every 24h
+      - WATCHTOWER_POLL_INTERVAL=86400
     restart: unless-stopped
